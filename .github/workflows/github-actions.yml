@@ -8,7 +8,7 @@ jobs:
               uses: lukka/get-cmake@latest
         
             - name: Build the project
-              run: mkdir build && cd build && cmake .. && cmake --build .
+              run: cmake -B build && cmake --build build
             
             - name: Run tests
               run: ./er-converter_test
