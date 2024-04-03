@@ -6,9 +6,11 @@ jobs:
         steps:
             - name: CMake Action
               uses: threeal/cmake-action@v1.3.0
+              with:
+                run-build: false
         
             - name: Build the project
-              run: mkdir build && cd build && cmake .. && make
+              run: mkdir build && cd build && cmake .. && cmake --build .
             
             - name: Run tests
               run: ./er-converter_test
