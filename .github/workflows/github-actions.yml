@@ -5,9 +5,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: CMake Action
-              uses: threeal/cmake-action@v1.3.0
-              with:
-                run-build: false
+              uses: lukka/get-cmake@latest
         
             - name: Build the project
               run: mkdir build && cd build && cmake .. && cmake --build .
