@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.27)
-project(ER-converter)
+cmake_minimum_required(VERSION 3.22)
+project(er-converter)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
@@ -19,8 +19,9 @@ set(tests_dir ${PROJECT_SOURCE_DIR}/tests)
 
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${source_dir}/*.cpp")
 
+include_directories(${include_dir})
+
 add_library(${PROJECT_NAME}_lib SHARED ${sources})
-target_include_directories(${PROJECT_NAME}_lib PRIVATE ${include_dir})
 
 enable_testing()
 
@@ -28,8 +29,14 @@ add_executable(${PROJECT_NAME}_exe main.cpp)
 target_link_libraries(
     ${PROJECT_NAME}_exe 
     PRIVATE ${PROJECT_NAME}_lib
-    PUBLIC GTest::gtest_main
+)
+
+add_executable(${PROJECT_NAME}_test ${tests_dir}/test.cpp)
+target_link_libraries(
+    ${PROJECT_NAME}_test
+    PRIVATE ${PROJECT_NAME}_lib
+    PRIVATE GTest::gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(${PROJECT_NAME}_exe)
+gtest_discover_tests(${PROJECT_NAME}_test)
