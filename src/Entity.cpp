@@ -1,4 +1,4 @@
-#include "../include/Entity.h"
+#include "Entity.h"
 
 TError Entity::AddField(std::string name, DataTypeEntity type, std::vector<ConstraintsEntity> constr) 
 {

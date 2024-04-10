@@ -1,4 +1,4 @@
-#include "../include/Errors.h"
+#include "Errors.h"
 
 TError::TError(ErrorsType err) 
 {
