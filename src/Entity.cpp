@@ -1,32 +1,61 @@
 #include "Entity.h"
 
-TError Entity::AddField(std::string name, DataTypeEntity type, std::vector<ConstraintsEntity> constr) 
+/*  
+    Simple method to added new field in Entity
+    in first he check to currect new Name and at
+    the end push new field in Entity
+*/
+bool erconv::Entity::AddField(
+    const std::string & name, 
+    const DataTypeEntity & type, 
+    const std::vector<ConstraintsEntity> & constr
+) 
 {
-    TError nameCheck = CheckIsValidName(name);
-    if (nameCheck.TypeError != SUCCESS_VALUE_E) {
-        return nameCheck;
+    try {
+        checkIsValidNameAndUnique(name);
+        checkIsValidDataTypeAndConstraints(type, constr);
+        TEntityField newEntity {name, type, constr};
+        Fields.push_back(newEntity);
+    } catch (const TError & e) {
+        std::cerr << e.GetMessage() << '\n';
+        return false;
     }
 
-    TEntityField newEntity {name, type, constr};
-
-    Fields.push_back(newEntity);
-
-    return TError(SUCCESS_VALUE_E);
+    return true;
 }
 
-TError Entity::DeleteField(std::string name) 
+bool erconv::Entity::DeleteField(const std::string & name) 
 {
-    std::vector<TEntityField>::iterator iToDelete = FindName(name);
+    std::vector<TEntityField>::iterator iToDelete = findName(name);
+
     if (iToDelete == Fields.end()) {
-        return TError(NOT_FOUND_NAME_E);
-    } else {
-        Fields.erase(iToDelete);
+        return false;
     }
-
-    return TError(SUCCESS_VALUE_E);
+    
+    Fields.erase(iToDelete);
+    return true;
 }
 
-std::vector<TEntityField>::iterator Entity::FindName(std::string nameF) 
+const std::vector<erconv::TEntityField> & erconv::Entity::GetAllFields() 
+{
+    return Fields;
+}
+
+/*
+    If Field by name not found, function return "null" object
+*/
+const erconv::TEntityField & erconv::Entity::GetFieldByName(const std::string & name)
+{
+    for (size_t i = 0; i < Fields.size(); ++i) {
+        if (Fields[i].Name == name) {
+            return Fields[i];
+        }
+    }
+
+    throw TError(ErrorsType::NOT_FOUND_NAME_E);
+}
+
+const std::vector<erconv::TEntityField>::iterator erconv::Entity::findName(const std::string & nameF) 
 {
     for (int i = 0; i < Fields.size(); ++i) {
         if (Fields[i].Name == nameF) {
@@ -37,7 +66,7 @@ std::vector<TEntityField>::iterator Entity::FindName(std::string nameF)
     return Fields.end();
 }
 
-TError Entity::CheckIsValidName(std::string name) 
+bool erconv::Entity::checkIsValidNameAndUnique(const std::string & name) 
 {
     // Checking to letter in name has valid diapason
     for (int i = 0; i < name.size(); ++i) {
@@ -49,14 +78,97 @@ TError Entity::CheckIsValidName(std::string name)
                 (name[i] >= '0' && name[i] <= '9')
             )
             ) {
-            return TError(INVALID_NAME_E);
+            throw TError(ErrorsType::INVALID_NAME_E);
+        }
+    }
+    // Checking the uniqueness of the name in all fields
+    if (findName(name) != Fields.end()) {
+        throw TError(ErrorsType::EXISTING_NAME_E);
+    }
+
+    return true;
+}
+
+/*
+    This method checks whether there may be 
+    some сonstraints on some data types
+*/
+bool erconv::Entity::checkIsValidDataTypeAndConstraints(
+            const DataTypeEntity & dt, 
+            const std::vector<ConstraintsEntity> & constr
+)
+{
+    /*
+        We check that there is no invalid
+        data type for a certain constraint AND
+        checking some colission with constraint.
+    */
+    for (size_t i = 0; i < constr.size(); ++i) {
+        switch (constr[i]) {
+        case ConstraintsEntity::UNDEFINED:
+            if (dt != DataTypeEntity::UNDEFINED) {
+                throw TError(ErrorsType::DATA_TYPE_NOT_DECLARED_E);
+                return false;
+            }
+            break;
+
+        case ConstraintsEntity::NOT_NULL_C:
+            for (size_t j = 0; j < constr.size(); ++j) {
+                if (
+                    constr[j] == ConstraintsEntity::NULL_C ||
+                    constr[j] == ConstraintsEntity::PRIMARY_KEY_C ||
+                    constr[j] == ConstraintsEntity::FOREIGN_KEY_C
+                ) {
+                    throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
+                    return false;
+                }
+            }
+            break;
+
+        case ConstraintsEntity::NULL_C:
+            for (size_t j = 0; j < constr.size(); ++j) {
+                if (
+                    constr[j] == ConstraintsEntity::NOT_NULL_C ||
+                    constr[j] == ConstraintsEntity::PRIMARY_KEY_C ||
+                    constr[j] == ConstraintsEntity::FOREIGN_KEY_C
+                ) {
+                    throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
+                    return false;
+                }
+            }
+            break;
+
+        case ConstraintsEntity::PRIMARY_KEY_C:
+            if (hasPrimaryKey == true) {
+                throw TError(ErrorsType::REDEFINITION_PRIMARY_KEY_E);
+            }
+
+            for (size_t j = 0; j < constr.size(); ++j) {
+                if (constr[j] == ConstraintsEntity::NULL_C ||
+                    constr[j] == ConstraintsEntity::NOT_NULL_C ||
+                    constr[j] == ConstraintsEntity::FOREIGN_KEY_C
+                ) {
+                    throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
+                    return false;
+                }
+            }
+            
+            hasPrimaryKey = true;
+            break;
+
+        case ConstraintsEntity::FOREIGN_KEY_C:
+            for (size_t j = 0; j < constr.size(); ++j) {
+                if (constr[j] == ConstraintsEntity::NULL_C ||
+                    constr[j] == ConstraintsEntity::NOT_NULL_C ||
+                    constr[j] == ConstraintsEntity::PRIMARY_KEY_C
+                ) {
+                    throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
+                    return false;
+                }
+            }
+            break;
         }
     }
 
-    // Checking the uniqueness of the name in all fields
-    if (FindName(name) == Fields.end()) {
-        return TError(EXISTING_NAME_E);
-    }
-
-return TError(SUCCESS_VALUE_E);
+    return true;
 }
