@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include "Entity.h"
 
 TEST(TestMethodAddField, BasedTest) {
@@ -31,8 +32,9 @@ TEST(TestMethodAddField, TestExceptionToRepeatName) {
     std::vector<erconv::ConstraintsEntity> constr2;
     Test.AddField("Name", erconv::DataTypeEntity::VARCHAR_T, constr2);
     
-    ASSERT_FALSE (
-        Test.AddField("Id", erconv::DataTypeEntity::INT_T, constr1)
+    EXPECT_THROW (
+        Test.AddField("Id", erconv::DataTypeEntity::INT_T, constr1),
+        erconv::TError
     );
 }
 
@@ -47,8 +49,9 @@ TEST(TestMethodAddField, TestExceptionToIvalidLetterInName) {
     std::vector<erconv::ConstraintsEntity> constr2;
     Test.AddField("Name", erconv::DataTypeEntity::VARCHAR_T, constr2);
     
-    ASSERT_FALSE(
-        Test.AddField("@dog:D", erconv::DataTypeEntity::INT_T, constr2)
+    ASSERT_THROW(
+        Test.AddField("@dog:D", erconv::DataTypeEntity::INT_T, constr2),
+        erconv::TError
     );
 }
 
@@ -59,8 +62,9 @@ TEST(TestMethodAddField, TestExceptionToInvalidDataType) {
         erconv::ConstraintsEntity::UNDEFINED
     };
     
-    ASSERT_FALSE(
-        Test.AddField("Id", erconv::DataTypeEntity::INT_T, constr1)
+    ASSERT_THROW(
+        Test.AddField("Id", erconv::DataTypeEntity::INT_T, constr1),
+        erconv::TError
     );
 }
 
@@ -72,8 +76,9 @@ TEST(TestMethodAddField, TestExceptionToCheckNullRepeat) {
         erconv::ConstraintsEntity::NOT_NULL_C
     };
     
-    ASSERT_FALSE(
-        Test.AddField("Id", erconv::DataTypeEntity::INT_T, constr1)
+    ASSERT_THROW(
+        Test.AddField("Id", erconv::DataTypeEntity::INT_T, constr1),
+        erconv::TError
     );
 }
 
@@ -85,8 +90,9 @@ TEST(TestMethodAddField, TestExceptionToCheckNotNullRepeat) {
         erconv::ConstraintsEntity::NULL_C
     };
     
-    ASSERT_FALSE(
-        Test.AddField("Id", erconv::DataTypeEntity::INT_T, constr1)
+    ASSERT_THROW(
+        Test.AddField("Id", erconv::DataTypeEntity::INT_T, constr1),
+        erconv::TError
     );
 }
 
@@ -98,8 +104,9 @@ TEST(TestMethodAddField, TestExceptionToRepeatDeclaratePrimaryKey) {
     };
     Test.AddField("Id", erconv::DataTypeEntity::INT_T, constr1);
     
-    ASSERT_FALSE(
-        Test.AddField("Id_copy", erconv::DataTypeEntity::INT_T, constr1)
+    ASSERT_THROW(
+        Test.AddField("Id_copy", erconv::DataTypeEntity::INT_T, constr1),
+        erconv::TError
     );
 }
 

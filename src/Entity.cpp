@@ -11,15 +11,11 @@ bool erconv::Entity::AddField(
     const std::vector<ConstraintsEntity> & constr
 ) 
 {
-    try {
-        checkIsValidNameAndUnique(name);
-        checkIsValidDataTypeAndConstraints(type, constr);
-        TEntityField newEntity {name, type, constr};
-        Fields.push_back(newEntity);
-    } catch (const TError & e) {
-        std::cerr << e.GetMessage() << '\n';
-        return false;
-    }
+    checkIsValidNameAndUnique(name);
+    checkIsValidDataTypeAndConstraints(type, constr);
+    
+    TEntityField newEntity {name, type, constr};
+    Fields.push_back(newEntity);
 
     return true;
 }
@@ -42,7 +38,7 @@ const std::vector<erconv::TEntityField> & erconv::Entity::GetAllFields()
 }
 
 /*
-    If Field by name not found, function return "null" object
+    If Field by name not found, function throw an exception
 */
 const erconv::TEntityField & erconv::Entity::GetFieldByName(const std::string & name)
 {
