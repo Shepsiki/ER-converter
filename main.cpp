@@ -1,7 +1,7 @@
-#include "hello.h"
+#include "Entity.h"
 
 int main() {
-    hello();
-
+    
+    
     return 0;
 }
