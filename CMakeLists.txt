@@ -18,6 +18,7 @@ set(include_dir ${PROJECT_SOURCE_DIR}/include)
 set(tests_dir ${PROJECT_SOURCE_DIR}/tests)
 
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${source_dir}/*.cpp")
+file(GLOB_RECURSE tests CONFIGURE_DEPENDS "${tests_dir}/*.cpp")
 
 include_directories(${include_dir})
 
@@ -31,7 +32,7 @@ target_link_libraries(
     PRIVATE ${PROJECT_NAME}_lib
 )
 
-add_executable(${PROJECT_NAME}_test ${tests_dir}/test.cpp)
+add_executable(${PROJECT_NAME}_test ${tests})
 target_link_libraries(
     ${PROJECT_NAME}_test
     PRIVATE ${PROJECT_NAME}_lib
