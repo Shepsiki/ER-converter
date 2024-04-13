@@ -79,6 +79,17 @@ namespace erconv {
         const std::vector<TEntityField> & GetAllFields();
         const TEntityField & GetFieldByName(const std::string & name); 
 
+        // --- Чесноков tweak:
+        Entity() : EntityName("NO_NAME") {}
+
+        std::string GetName() const { return EntityName; }
+
+        bool operator==(const Entity& other) const {
+            // Compare the names of the entities
+            return EntityName == other.EntityName;
+        }
+        // ---
+
         ~Entity() = default;
 
     private:

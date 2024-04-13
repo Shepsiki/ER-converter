@@ -3,16 +3,30 @@
 erconv::TError::TError(const ErrorsType & err) 
 {
     switch (err) {
-    case ErrorsType::INVALID_NAME_E:
-        TypeError = ErrorsType::INVALID_NAME_E;
+    // ENTITIES
+    case ErrorsType::INVALID_ENTITY_NAME_E:
+        TypeError = ErrorsType::INVALID_ENTITY_NAME_E;
+        msg = "ERROR: Invalid entity name\n";
+        break;
+    case ErrorsType::EXISTING_ENTITY_NAME_E:
+        TypeError = ErrorsType::EXISTING_ENTITY_NAME_E;
+        //msg = "ERROR: This name is already used in the fields of this entity\n";
+        msg = "ERROR: This entity is already in use\n";
+        break;
+    case ErrorsType::NOT_FOUND_ENTITY_NAME_E:
+        TypeError = ErrorsType::NOT_FOUND_ENTITY_NAME_E;
+        msg = "ERROR: There is no entity with this name\n";
+        break;
+    case ErrorsType::INVALID_ENTITY_FIELD_NAME_E:
+        TypeError = ErrorsType::INVALID_ENTITY_FIELD_NAME_E;
         msg = "ERROR: The field name has invalid characters\n";
         break;
-    case ErrorsType::EXISTING_NAME_E:
-        TypeError = ErrorsType::EXISTING_NAME_E;
+    case ErrorsType::EXISTING_ENTITY_FIELD_NAME_E:
+        TypeError = ErrorsType::EXISTING_ENTITY_FIELD_NAME_E;
         msg = "ERROR: This name is already used in the fields of this entity\n";
         break;
-    case ErrorsType::NOT_FOUND_NAME_E:
-        TypeError = ErrorsType::NOT_FOUND_NAME_E;
+    case ErrorsType::NOT_FOUND_ENTITY_FIELD_NAME_E:
+        TypeError = ErrorsType::NOT_FOUND_ENTITY_FIELD_NAME_E;
         msg = "ERROR: There is no field with this name\n";
         break;
     case ErrorsType::DATA_TYPE_NOT_DECLARED_E:
@@ -27,6 +41,22 @@ erconv::TError::TError(const ErrorsType & err)
         TypeError = ErrorsType::REDEFINITION_PRIMARY_KEY_E;
         msg = "ERROR: Attempt to redefine the constraint PRIMARY KEY\n";
         break;    
+
+    // RELATIONSHIPS
+    case ErrorsType::INVALID_RELATIONSHIP_NAME_E:
+        TypeError = ErrorsType::INVALID_RELATIONSHIP_NAME_E;
+        msg = "ERROR: Invalid relationship name\n";
+        break;
+    case ErrorsType::EXISTING_RELATIONSHIP_NAME_E:
+        TypeError = ErrorsType::EXISTING_RELATIONSHIP_NAME_E;
+        //msg = "ERROR: This name is already used in the fields of this entity\n";
+        msg = "ERROR: This relationship is already in use\n";
+        break;
+    case ErrorsType::NOT_FOUND_RELATIONSHIP_NAME_E:
+        TypeError = ErrorsType::NOT_FOUND_RELATIONSHIP_NAME_E;
+        msg = "ERROR: There is no relationship with this name\n";
+        break;
+
     default:
         break;
     }

@@ -48,7 +48,7 @@ const erconv::TEntityField & erconv::Entity::GetFieldByName(const std::string & 
         }
     }
 
-    throw TError(ErrorsType::NOT_FOUND_NAME_E);
+    throw TError(ErrorsType::NOT_FOUND_ENTITY_NAME_E);
 }
 
 const std::vector<erconv::TEntityField>::iterator erconv::Entity::findName(const std::string & nameF) 
@@ -74,12 +74,12 @@ bool erconv::Entity::checkIsValidNameAndUnique(const std::string & name)
                 (name[i] >= '0' && name[i] <= '9')
             )
             ) {
-            throw TError(ErrorsType::INVALID_NAME_E);
+            throw TError(ErrorsType::INVALID_ENTITY_NAME_E);
         }
     }
     // Checking the uniqueness of the name in all fields
     if (findName(name) != Fields.end()) {
-        throw TError(ErrorsType::EXISTING_NAME_E);
+        throw TError(ErrorsType::EXISTING_ENTITY_NAME_E);
     }
 
     return true;
@@ -162,6 +162,8 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
                     return false;
                 }
             }
+            break;
+        default: 
             break;
         }
     }
