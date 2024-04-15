@@ -20,20 +20,6 @@ int main() {
     ent2.AddField("Name2", erconv::DataTypeEntity::VARCHAR_T, constr2);
     ent2.AddField("Address2", erconv::DataTypeEntity::TEXT_T, constr3);
 
-    Relationship rel1(ONE_TO_ONE_T, "Works", &ent1, &ent2);
-    Relationship rel2(ONE_TO_MANY_T, "Studies", &ent1, &ent2);
-
-    ERModel erModel;
-
-    erModel.AddEntity("Students"); // Add an entity with the same name
-    erModel.AddEntity("Facilities");
-    erModel.AddEntity("3");
-    erModel.AddEntity("4");
-
-    erModel.FindEntity("4");
-
-    std::cout << rel1 << std::endl << rel2 << std::endl;
-
     // ПОЧИСТИТЕ, ЕСЛИ НАДО
 
     return 0;

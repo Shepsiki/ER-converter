@@ -77,18 +77,23 @@ namespace erconv {
         bool DeleteField(const std::string & name);
 
         const std::vector<TEntityField> & GetAllFields();
-        const TEntityField & GetFieldByName(const std::string & name); 
+        const TEntityField & GetFieldByName(const std::string & name) const; // <-- Добавил const
 
-        // --- Чесноков tweak:
+
+        //!!!// --- Чесноков tweak ---
+
         Entity() : EntityName("NO_NAME") {}
 
-        std::string GetName() const { return EntityName; }
+        std::string GetName() const;
 
-        bool operator==(const Entity& other) const {
-            // Compare the names of the entities
-            return EntityName == other.EntityName;
-        }
-        // ---
+        bool operator==(const Entity& other) const;
+
+        bool HasPrimaryKey() const;
+
+        const std::string GetPrimaryKeyName() const;
+
+        //!!!//
+
 
         ~Entity() = default;
 

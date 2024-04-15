@@ -16,51 +16,66 @@ namespace erconv {
         MANY_TO_MANY_T,
     };
 
+    class ERModel;
+
     class Relationship {
     // МЕТОДЫ
     public:
-        Relationship(TypeRelationship   _type, 
-                     const std::string &_relationName, 
-                     Entity*            _lhsEntity, 
-                     Entity*            _rhsEntity) :
+        Relationship(ERModel* _model,
+                     TypeRelationship _type, 
+                     const std::string  &_lhsEntityName, 
+                     const std::string  &_rhsEntityName, 
+                     std::string _name) :
+            parentModel(_model), 
             type(_type), 
-            relationName(_relationName), 
-            lhsEntity(_lhsEntity), 
-            rhsEntity(_rhsEntity) {}
+            lhsEntityName(_lhsEntityName), 
+            rhsEntityName(_rhsEntityName), 
+            name(_name),
+            primaryKeyName(""),
+            foreignKeyName("") {}
 
-        Relationship() : 
-        type(UNDEFINED_RELATIONSHIP_T), 
-        relationName("NO_NAME"),
-        lhsEntity(nullptr),
-        rhsEntity(nullptr) {}
+        // СЕТТЕРЫ
 
-        std::string      GetName() const;
+        void SetPrimaryKey(const std::string &keyName);
 
-        TypeRelationship GetType() const;
+        void SetForeignKey(const std::string &keyName);
 
-        const Entity*    GetLhsEntity() const;
+        // ГЕТТЕРЫ
 
-        const Entity*    GetRhsEntity() const;
+        const TypeRelationship GetType() const;
+
+        const std::string& GetLhsEntityName() const;
+
+        const std::string& GetRhsEntityName() const;
+
+        const std::string& GetPrimaryKey() const;
+
+        const std::string& GetForeignKey() const;
+
+        const std::string& GetName() const;
+
+        const ERModel* GetModelPtr() const;
 
         ~Relationship() = default;
-
-        friend std::ostream& operator<<(std::ostream& os, const Relationship& rel);
 
     private:
 
     // ПОЛЯ
+    public:
+        
+
     private:
+        const ERModel* parentModel;
+
         TypeRelationship type;
+        
+        std::string lhsEntityName;
+        std::string rhsEntityName;
 
-        std::string relationName;
+        std::string primaryKeyName;
+        std::string foreignKeyName;
 
-        Entity* lhsEntity;
-        Entity* rhsEntity;
-
+        std::string name;
     };
 
-    // ПЕРЕВОД ТИПА ОТНОШЕНИЯ в СТРОКУ
-    //std::string TypeRelationship2Str(TypeRelationship type); <-- в .cpp
-
-}; // namespace erconv
-
+};

@@ -1,35 +1,24 @@
 #include "Relationship.h"
 
 using namespace erconv;
+// СЕТТЕРЫ
 
-std::string      Relationship::GetName()      const { return relationName; }
+void Relationship::SetPrimaryKey(const std::string &keyName) { primaryKeyName = keyName; }
 
-TypeRelationship Relationship::GetType()      const { return type; }
+void Relationship::SetForeignKey(const std::string &keyName) { foreignKeyName = keyName; }
 
-const Entity*    Relationship::GetLhsEntity() const { return lhsEntity; }
+// ГЕТТЕРЫ
 
-const Entity*    Relationship::GetRhsEntity() const { return rhsEntity; }
+const TypeRelationship Relationship::GetType() const { return type; }
 
-// ПЕРЕВОД ТИПА ОТНОШЕНИЯ в СТРОКУ
-std::string TypeRelationship2Str(TypeRelationship type) {
-    switch (type) {
-        case ONE_TO_ONE_T:             return "one-to-one";
-        case ONE_TO_MANY_T:            return "one-to-many";
-        case MANY_TO_MANY_T:           return "many-to-many";
-        case UNDEFINED_RELATIONSHIP_T: 
-        default:                       return "undefined-relationship";
-    }
-}
+const std::string& Relationship::GetLhsEntityName() const { return lhsEntityName; }
 
-// ВЫВОД В ПОТОК
-std::ostream& erconv::operator<<(std::ostream& os, const Relationship& rel) {
-    std::string relType = TypeRelationship2Str( rel.GetType() );
-    std::string relName = rel.GetName();
-    const Entity* relLhsEntity = rel.GetLhsEntity();
-    const Entity* relRhsEntity = rel.GetRhsEntity();
-    // Можете менять формат вывода на своё усмотрение
-    os << "{ Type: " << relType << ", Name: " << relName  
-        <<", Left Entity: " << relLhsEntity->GetName() 
-        << ", Right Entity: " << relRhsEntity->GetName() << " }";
-        return os;
-}
+const std::string& Relationship::GetRhsEntityName() const { return rhsEntityName; }
+
+const std::string& Relationship::GetPrimaryKey() const { return primaryKeyName; }
+
+const std::string& Relationship::GetForeignKey() const { return foreignKeyName; }
+
+const std::string& Relationship::GetName() const { return name; }
+
+const ERModel* Relationship::GetModelPtr() const { return parentModel; }

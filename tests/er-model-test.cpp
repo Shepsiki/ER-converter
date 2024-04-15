@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include "Model.h"
-#include "Relationship.h"
 
 namespace erconv {
 
@@ -16,7 +15,7 @@ protected:
 
         std::vector<erconv::ConstraintsEntity> constr1 {erconv::ConstraintsEntity::PRIMARY_KEY_C};
         std::vector<erconv::ConstraintsEntity> constr2;
-        std::vector<erconv::ConstraintsEntity> constr3 {erconv::ConstraintsEntity::NOT_NULL_C};
+        std::vector<erconv::ConstraintsEntity> constr3 {erconv::ConstraintsEntity::FOREIGN_KEY_C};
 
         ent1.AddField("Id1", erconv::DataTypeEntity::INT_T, constr1);
         ent1.AddField("Name1", erconv::DataTypeEntity::VARCHAR_T, constr2);
@@ -26,8 +25,7 @@ protected:
         ent2.AddField("Name2", erconv::DataTypeEntity::VARCHAR_T, constr2);
         ent2.AddField("Address2", erconv::DataTypeEntity::TEXT_T, constr3);
 
-        rel1 = Relationship(ONE_TO_ONE_T, "Works", &ent1, &ent2);
-        rel2 = Relationship(ONE_TO_MANY_T, "Studies", &ent1, &ent2);
+        ent3.AddField("Id2", erconv::DataTypeEntity::INT_T, constr1);
     }
 
     void TearDown() override {
@@ -39,8 +37,6 @@ protected:
     Entity ent2;
     Entity ent3;
     Entity ent4;
-    Relationship rel1;
-    Relationship rel2;
     ERModel erModel;
 };
 
@@ -73,16 +69,11 @@ TEST_F(ERModelTest, AddEntityField_EntityNotFound) {
     ASSERT_THROW(erModel.AddEntityField("NonExistentEntity", "Field1", DataTypeEntity::INT_T, {}), TError);
 }
 
-TEST_F(ERModelTest, AddRelationship1_ValidRelationship) {
+TEST_F(ERModelTest, AddRelationship_ValidRelationship) {
     erModel.AddEntity(ent1);
     erModel.AddEntity(ent2);
-
     // Add a valid relationship
-    EXPECT_TRUE(erModel.AddRelationship(ONE_TO_ONE_T, "Works", ent1, ent2));
-}
-
-TEST_F(ERModelTest, AddRelationship2_ValidRelationship) {
-    EXPECT_TRUE(erModel.AddRelationship(rel1));
+    EXPECT_TRUE(erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2"));
 }
 
 TEST_F(ERModelTest, AddRelationship_DuplicateName) {
@@ -90,8 +81,8 @@ TEST_F(ERModelTest, AddRelationship_DuplicateName) {
     erModel.AddEntity(ent2);
 
     // Add a relationship with the same name twice
-    erModel.AddRelationship(ONE_TO_ONE_T, "Works", ent1, ent2);
-    EXPECT_THROW(erModel.AddRelationship(ONE_TO_MANY_T, "Works", ent1, ent2), TError);
+    erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2");
+    EXPECT_THROW(erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2"), TError);
 }
 
 TEST_F(ERModelTest, AddRelationship_InvalidName) {
@@ -99,7 +90,27 @@ TEST_F(ERModelTest, AddRelationship_InvalidName) {
     erModel.AddEntity(ent2);
 
     // Add a relationship with an invalid name
-    EXPECT_THROW(erModel.AddRelationship(ONE_TO_MANY_T, "", ent1, ent2), TError);
+    EXPECT_THROW(erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2", ""), TError);
+}
+
+TEST_F(ERModelTest, AddRelationship_NoPrimaryKey) {
+    erModel.AddEntity(ent1);
+    erModel.AddEntity(ent2);
+    erModel.AddEntity(ent3);
+    erModel.AddEntity(ent4);
+
+    // Add a relationship with an invalid name
+    EXPECT_THROW(erModel.AddRelationship(ONE_TO_ONE_T, "4", "Facilities", "Address2", ""), TError);
+}
+
+TEST_F(ERModelTest, AddRelationship_WrongForeignKey) {
+    erModel.AddEntity(ent1);
+    erModel.AddEntity(ent2);
+    erModel.AddEntity(ent3);
+    erModel.AddEntity(ent4);
+
+    // Add a relationship with an invalid name
+    EXPECT_THROW(erModel.AddRelationship(ONE_TO_ONE_T, "3", "Facilities", "KtoYa?", ""), TError);
 }
 
 TEST_F(ERModelTest, RemoveEntity_ValidEntity) {
@@ -147,50 +158,57 @@ TEST_F(ERModelTest, RemoveEntityField_NonExistingField) {
 TEST_F(ERModelTest, RemoveRelationship_ValidRelationship) {
     erModel.AddEntity(ent1);
     erModel.AddEntity(ent2);
-    erModel.AddRelationship(rel1);
+    erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2");
     // Remove an existing relationship
-    ASSERT_TRUE(erModel.RemoveRelationship("Works"));
+    ASSERT_TRUE(erModel.RemoveRelationship("Students", "Facilities", "Address2"));
     // Check if the relationship was removed successfully
 }
 
 TEST_F(ERModelTest, RemoveRelationship_NonExistingRelationship) {
     erModel.AddEntity(ent1);
     erModel.AddEntity(ent2);
-    erModel.AddEntity(ent3);
-    erModel.AddEntity(ent4);
-    erModel.AddRelationship(rel1);
-    erModel.AddRelationship(rel2);
-    // Remove a non-existing relationship
-    EXPECT_THROW(erModel.RemoveRelationship("NonExistingRelationship"), TError);
+    erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2");
+    // Remove non existing relationship
+    EXPECT_THROW(erModel.RemoveRelationship("Studentosiki", "Facilities", "Address2"), TError);
+    // Check if the relationship was removed successfully
 }
 
 // Search tests
 
-TEST_F(ERModelTest, FindEntity_ExistingEntity) {
-    erModel.AddEntity("Students"); // Add an entity to the model
-    erModel.AddEntity("Facilities");
-    const Entity* entityPtr = erModel.FindEntity("Students");
-    ASSERT_NE(entityPtr, nullptr);
+TEST_F(ERModelTest, GetEntity_EntityExists) {
+    // Retrieve an existing entity
+    erModel.AddEntity(ent1);
+    erModel.AddEntity(ent2);
+    const Entity& retrievedEntity = erModel.GetEntity("Facilities");
+
+    // Check if the retrieved entity matches the expected entity
+    EXPECT_EQ(retrievedEntity.GetName(), "Facilities");
 }
 
-TEST_F(ERModelTest, FindEntity_NonExistentEntity) {
-    const Entity* entityPtr = erModel.FindEntity("NonExistentEntity");
-    ASSERT_EQ(entityPtr, nullptr);
+TEST_F(ERModelTest, GetEntity_NonExistentEntity) {
+    erModel.AddEntity(ent1);
+    erModel.AddEntity(ent2);
+    ASSERT_THROW(erModel.GetEntity("KtoYa?"), TError);
 }
 
-TEST_F(ERModelTest, FindRelationship_ExistingRelationship) {
-    erModel.AddRelationship(rel1);
-    erModel.AddRelationship(rel2);
-    erModel.AddRelationship(ONE_TO_ONE_T, "TestRel", ent1, ent2);
-    const Relationship* relPtr = erModel.FindRelationship("Works");
-    ASSERT_NE(relPtr, nullptr);
-    relPtr = erModel.FindRelationship("TestRel");
-    ASSERT_NE(relPtr, nullptr);
+TEST_F(ERModelTest, GetRelationship_ExistingRelationship) {
+    erModel.AddEntity(ent1);
+    erModel.AddEntity(ent2);
+    erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2");
+    const Relationship& rel = erModel.GetRelationship("Students", "Facilities", "Address2");
+    EXPECT_EQ(rel.GetName(), "Students_to_Facilities_Address2");
+    EXPECT_EQ(rel.GetType(), ONE_TO_ONE_T);
+    EXPECT_EQ(rel.GetLhsEntityName(), "Students");
+    EXPECT_EQ(rel.GetRhsEntityName(), "Facilities");
+    EXPECT_EQ(rel.GetForeignKey(), "Address2");
+    EXPECT_EQ(rel.GetPrimaryKey(), ent1.GetPrimaryKeyName());
 }
 
-TEST_F(ERModelTest, FindRelationship_NonExistentRelationship) {
-    const Relationship* relPtr = erModel.FindRelationship("BYE_BYE");
-    ASSERT_EQ(relPtr, nullptr);
+TEST_F(ERModelTest, GetRelationship_NonExistentRelationship) {
+    erModel.AddEntity(ent1);
+    erModel.AddEntity(ent2);
+    erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2");
+    EXPECT_THROW(erModel.GetRelationship("Studentosik", "Facilities", "Address2"), TError);
 }
 
 // Getters tests
@@ -209,21 +227,6 @@ TEST_F(ERModelTest, GetEntity_NonExistingEntity) {
     // Assert that the correct exception is thrown when the entity doesn't exist
     ASSERT_THROW(erModel.GetEntity("NonExistingEntity"), TError);
 }
-
-TEST_F(ERModelTest, GetRelationship_ExistingRelationship) {
-    erModel.AddRelationship(rel1);
-    erModel.AddRelationship(rel2);
-    erModel.AddRelationship(ONE_TO_ONE_T, "TestRel", ent1, ent2);
-    const Relationship& relationship = erModel.GetRelationship("Works");
-    // Assert that the correct relationship is returned
-    ASSERT_EQ(relationship.GetName(), "Works");
-}
-
-TEST_F(ERModelTest, GetRelationship_NonExistingRelationship) {
-    // Assert that the correct exception is thrown when the relationship doesn't exist
-    ASSERT_THROW(erModel.GetRelationship("NonExistingRelationship"), TError);
-}
-
 
 TEST_F(ERModelTest, GetEntities) {
     // Add entities to the ERModel
@@ -258,52 +261,34 @@ TEST_F(ERModelTest, GetEntities) {
 
 
 TEST_F(ERModelTest, GetRelationships) {
-    // Add relationships to the ERModel
-    erModel.AddRelationship(rel1);
-    erModel.AddRelationship(rel2);
+    erModel.AddEntity(ent1);
+    erModel.AddEntity(ent2);
+    erModel.AddEntity(ent3);
+    erModel.AddEntity(ent4);
+    erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2");
+    erModel.AddRelationship(ONE_TO_ONE_T, "3", "Facilities", "Address2");
 
     // Get the relationships from the ERModel
     const std::vector<Relationship>& relationships = erModel.GetRelationships();
 
     // Assert the size of the vector
     ASSERT_EQ(relationships.size(), 2);
-
-    // Assert the content of the vector
-    ASSERT_TRUE(std::find_if(relationships.begin(), relationships.end(), [&](const Relationship& relationship) {
-        return relationship.GetName() == "Works";
-    }) != relationships.end());
-
-    ASSERT_TRUE(std::find_if(relationships.begin(), relationships.end(), [&](const Relationship& relationship) {
-        return relationship.GetName() == "Studies";
-    }) != relationships.end());
 }
 
 
 TEST_F(ERModelTest, GetConnectedRelationships) {
-    // Add entities to the ERModel
     erModel.AddEntity(ent1);
     erModel.AddEntity(ent2);
     erModel.AddEntity(ent3);
     erModel.AddEntity(ent4);
-
-    // Add relationships to the ERModel
-    erModel.AddRelationship(rel1);
-    erModel.AddRelationship(rel2);
+    erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2");
+    erModel.AddRelationship(ONE_TO_ONE_T, "3", "Facilities", "Address2");
 
     // Get the connected relationships for entity ent1
-    const std::vector<Relationship>& connectedRelationships = erModel.GetConnectedRelationships(ent1);
+    const std::vector<Relationship>& connectedRelationships = erModel.GetConnectedRelationships(ent2);
 
     // Assert the size of the vector
     ASSERT_EQ(connectedRelationships.size(), 2);
-
-    // Assert the content of the vector
-    ASSERT_TRUE(std::find_if(connectedRelationships.begin(), connectedRelationships.end(), [&](const Relationship& relationship) {
-        return relationship.GetName() == "Works";
-    }) != connectedRelationships.end());
-
-    ASSERT_TRUE(std::find_if(connectedRelationships.begin(), connectedRelationships.end(), [&](const Relationship& relationship) {
-        return relationship.GetName() == "Studies";
-    }) != connectedRelationships.end());
 }
 
 

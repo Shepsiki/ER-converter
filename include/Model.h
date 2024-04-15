@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <utility>
+#include <set>
 #include "Entity.h"
 #include "Relationship.h"
 #include "Errors.h"
@@ -24,30 +25,30 @@ namespace erconv {
 
         bool AddEntityField(const std::string   entityName, 
                             const std::string   fieldName, 
-                            const DataTypeEntity & fieldType, 
-                            const std::vector<ConstraintsEntity> & fieldConstr);
+                            const DataTypeEntity &fieldType, 
+                            const std::vector<ConstraintsEntity> &fieldConstr);
 
-        bool AddRelationship(Relationship& rel);
-
-        bool AddRelationship(TypeRelationship type, const std::string name, Entity &lhsEntity, Entity &rhsEntity);
+        bool AddRelationship(TypeRelationship type,
+                             const std::string &lhsEntityName, 
+                             const std::string &rhsEntityName,
+                             const std::string &foreignKey,
+                             const std::string _name="unnamed_relation");
 
         bool RemoveEntity(const std::string& name);
 
         bool RemoveEntityField(const std::string& name, const std::string& fieldName);
 
-        bool RemoveRelationship(const std::string& name);
-
-    // ПОИСК:
-
-        const Entity* FindEntity(const std::string& name);
-
-        const Relationship* FindRelationship(const std::string& name);
+        bool RemoveRelationship(const std::string &lhsEntityName, 
+                                const std::string &rhsEntityName,
+                                const std::string &foreignKey);
 
     // ГЕТТЕРЫ:
 
         const Entity& GetEntity(const std::string& name);
 
-        const Relationship& GetRelationship(const std::string& name);
+        const Relationship& GetRelationship(const std::string &lhsEntityName, 
+                                            const std::string &rhsEntityName,
+                                            const std::string &foreignKey);
 
         const std::vector<Entity>& GetEntities() const;
 
@@ -60,15 +61,27 @@ namespace erconv {
         bool IsEmpty();
 
     private:
+        const Entity* findEntity(const std::string& name);
+
+        const Relationship* findRelationship(const std::string &lhsEntityName, 
+                                             const std::string &rhsEntityName,
+                                             const std::string &foreignKey);
+
         std::vector<Entity>::iterator findEntityIter(const std::string& name);
 
-        std::vector<Relationship>::iterator findRelationshipIter(const std::string& name);
+        std::vector<Relationship>::iterator findRelationshipIter(const std::string &lhsEntityName, 
+                                                                 const std::string &rhsEntityName,
+                                                                 const std::string &foreignKey);
+
+        bool removeRelationshipByRef(Relationship& rel);
 
         bool isValidName(const std::string& name);
 
     private:
         std::vector<Entity> entities;
         std::vector<Relationship> relationships;
+
+        // ... еще чьи-то IDs
 
     };
 
