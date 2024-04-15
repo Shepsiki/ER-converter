@@ -1,7 +1,7 @@
-#include "Entity.h"
+#include "Model.h"
 
-int main() {
-    
-    
+using namespace erconv;
+
+int main() { 
     return 0;
 }

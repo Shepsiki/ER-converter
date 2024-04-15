@@ -5,6 +5,33 @@
     in first he check to currect new Name and at
     the end push new field in Entity
 */
+
+std::string erconv::Entity::GetName() const { return EntityName; }
+
+bool erconv::Entity::operator==(const Entity& other) const {
+    // Compare the names of the entities
+    return EntityName == other.EntityName;
+}
+
+bool erconv::Entity::HasPrimaryKey() const { return hasPrimaryKey; }
+
+const std::string erconv::Entity::GetPrimaryKeyName() const {
+    if (!HasPrimaryKey()) {
+        throw TError(ErrorsType::HAVE_NO_PRIMARY_KEY_E);
+    }
+    for (const auto &field : Fields) {
+        const std::string &name = field.Name;
+        for (const auto &constr : field.Constraints) {
+            if (constr == ConstraintsEntity::PRIMARY_KEY_C) {
+                return name;
+            }
+        }
+    }
+    return "";
+}
+
+//!!!//
+
 bool erconv::Entity::AddField(
     const std::string & name, 
     const DataTypeEntity & type, 
@@ -40,7 +67,7 @@ const std::vector<erconv::TEntityField> & erconv::Entity::GetAllFields()
 /*
     If Field by name not found, function throw an exception
 */
-const erconv::TEntityField & erconv::Entity::GetFieldByName(const std::string & name)
+const erconv::TEntityField & erconv::Entity::GetFieldByName(const std::string & name) const
 {
     for (size_t i = 0; i < Fields.size(); ++i) {
         if (Fields[i].Name == name) {
@@ -48,7 +75,7 @@ const erconv::TEntityField & erconv::Entity::GetFieldByName(const std::string & 
         }
     }
 
-    throw TError(ErrorsType::NOT_FOUND_NAME_E);
+    throw TError(ErrorsType::NOT_FOUND_ENTITY_FIELD_NAME_E);
 }
 
 const std::vector<erconv::TEntityField>::iterator erconv::Entity::findName(const std::string & nameF) 
@@ -74,12 +101,12 @@ bool erconv::Entity::checkIsValidNameAndUnique(const std::string & name)
                 (name[i] >= '0' && name[i] <= '9')
             )
             ) {
-            throw TError(ErrorsType::INVALID_NAME_E);
+            throw TError(ErrorsType::INVALID_ENTITY_FIELD_NAME_E);
         }
     }
     // Checking the uniqueness of the name in all fields
     if (findName(name) != Fields.end()) {
-        throw TError(ErrorsType::EXISTING_NAME_E);
+        throw TError(ErrorsType::EXISTING_ENTITY_FIELD_NAME_E);
     }
 
     return true;
@@ -111,9 +138,7 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
         case ConstraintsEntity::NOT_NULL_C:
             for (size_t j = 0; j < constr.size(); ++j) {
                 if (
-                    constr[j] == ConstraintsEntity::NULL_C ||
-                    constr[j] == ConstraintsEntity::PRIMARY_KEY_C ||
-                    constr[j] == ConstraintsEntity::FOREIGN_KEY_C
+                    constr[j] == ConstraintsEntity::NULL_C
                 ) {
                     throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
                     return false;
@@ -124,9 +149,7 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
         case ConstraintsEntity::NULL_C:
             for (size_t j = 0; j < constr.size(); ++j) {
                 if (
-                    constr[j] == ConstraintsEntity::NOT_NULL_C ||
-                    constr[j] == ConstraintsEntity::PRIMARY_KEY_C ||
-                    constr[j] == ConstraintsEntity::FOREIGN_KEY_C
+                    constr[j] == ConstraintsEntity::PRIMARY_KEY_C
                 ) {
                     throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
                     return false;
@@ -140,8 +163,7 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
             }
 
             for (size_t j = 0; j < constr.size(); ++j) {
-                if (constr[j] == ConstraintsEntity::NULL_C ||
-                    constr[j] == ConstraintsEntity::NOT_NULL_C ||
+                if (
                     constr[j] == ConstraintsEntity::FOREIGN_KEY_C
                 ) {
                     throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
@@ -151,20 +173,19 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
             
             hasPrimaryKey = true;
             break;
-
-        case ConstraintsEntity::FOREIGN_KEY_C:
-            for (size_t j = 0; j < constr.size(); ++j) {
-                if (constr[j] == ConstraintsEntity::NULL_C ||
-                    constr[j] == ConstraintsEntity::NOT_NULL_C ||
-                    constr[j] == ConstraintsEntity::PRIMARY_KEY_C
-                ) {
-                    throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
-                    return false;
-                }
-            }
+        default: 
             break;
         }
     }
 
     return true;
+}
+
+bool erconv::TEntityField::HasConstraint(const ConstraintsEntity &con) const {
+    for (const auto& c : Constraints) {
+        if (c == con) {
+            return true;
+        }
+    }
+    return false;
 }

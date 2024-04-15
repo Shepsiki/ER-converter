@@ -147,3 +147,26 @@ TEST(TestMethodDeleteField, TestExceptionToNotFoundField) {
 
     ASSERT_FALSE(Test.DeleteField("SecondName"));
 }
+
+TEST(TestMethodGetName, DamnIlyaNameTheseTestsProperly1) {
+    erconv::Entity Test("Test");
+    ASSERT_TRUE(Test.GetName() == "Test");
+}
+
+TEST(TestMethodOperatorEquality, DamnIlyaNameTheseTestsProperly2) {
+        // Create two entities with the same name
+    erconv::Entity entity1("TestEntity");
+    erconv::Entity entity2("TestEntity");
+
+    // Check if the operator correctly identifies them as equal
+    ASSERT_TRUE(entity1 == entity2);
+}
+
+TEST(TestMethodOperatorEquality, DamnIlyaNameTheseTestsProperly3) {
+        // Create two entities with the same name
+    erconv::Entity entity1("TestEntity1");
+    erconv::Entity entity2("TestEntity2");
+
+    // Check if the operator correctly identifies them as equal
+    ASSERT_FALSE(entity1 == entity2);
+}

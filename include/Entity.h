@@ -3,8 +3,7 @@
 #include <iostream>
 #include <vector>
 
-#include "./Errors.h"
-
+#include "Errors.h"
 
 namespace erconv {
     /*
@@ -52,12 +51,13 @@ namespace erconv {
         This type implements the representation 
         of each entity field. The NAME field is unique
     */
-    typedef struct _T_entity_field
-    {
+    struct TEntityField {
         std::string Name = "no_name";
         DataTypeEntity DataType = DataTypeEntity::UNDEFINED;
         std::vector<ConstraintsEntity> Constraints {ConstraintsEntity::UNDEFINED};
-    } TEntityField;
+
+        bool HasConstraint(const ConstraintsEntity& con) const;
+    };
 
     /*
         This class is a complete representation of a single entity 
@@ -77,7 +77,13 @@ namespace erconv {
         bool DeleteField(const std::string & name);
 
         const std::vector<TEntityField> & GetAllFields();
-        const TEntityField & GetFieldByName(const std::string & name); 
+        const TEntityField & GetFieldByName(const std::string & name) const; // <-- Добавил const
+
+        Entity() : EntityName("NO_NAME") {}
+        std::string GetName() const;
+        bool operator==(const Entity& other) const;
+        bool HasPrimaryKey() const;
+        const std::string GetPrimaryKeyName() const;
 
         ~Entity() = default;
 
