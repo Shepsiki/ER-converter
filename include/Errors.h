@@ -28,6 +28,7 @@ namespace erconv {
         ErrorsType TypeError;
         std::string msg;
 
+        TError(const std::string& message);
         TError(const ErrorsType & err);
 
         const std::string & GetMessage() const;

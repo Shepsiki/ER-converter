@@ -63,7 +63,10 @@ bool ERModel::AddRelationship(TypeRelationship type,
     const Entity &rhsEnt = GetEntity(rhsEntityName); // прокидывается ошибка везде
 
     const std::string &primaryKey = lhsEnt.GetPrimaryKeyName();
-    rhsEnt.GetFieldByName(foreignKey);
+    const TEntityField& field = rhsEnt.GetFieldByName(foreignKey);
+    if (!field.HasConstraint(ConstraintsEntity::FOREIGN_KEY_C)) {
+        throw TError("Trying to create relationship to non foreign key attribute.");
+    }
 
     std::string newName = _name;
     if (_name == "unnamed_relation") {

@@ -6,7 +6,6 @@
     the end push new field in Entity
 */
 
-//!!!// --- Чесноков tweak ---
 std::string erconv::Entity::GetName() const { return EntityName; }
 
 bool erconv::Entity::operator==(const Entity& other) const {
@@ -30,6 +29,7 @@ const std::string erconv::Entity::GetPrimaryKeyName() const {
     }
     return "";
 }
+
 //!!!//
 
 bool erconv::Entity::AddField(
@@ -138,9 +138,7 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
         case ConstraintsEntity::NOT_NULL_C:
             for (size_t j = 0; j < constr.size(); ++j) {
                 if (
-                    constr[j] == ConstraintsEntity::NULL_C ||
-                    constr[j] == ConstraintsEntity::PRIMARY_KEY_C ||
-                    constr[j] == ConstraintsEntity::FOREIGN_KEY_C
+                    constr[j] == ConstraintsEntity::NULL_C
                 ) {
                     throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
                     return false;
@@ -151,9 +149,7 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
         case ConstraintsEntity::NULL_C:
             for (size_t j = 0; j < constr.size(); ++j) {
                 if (
-                    constr[j] == ConstraintsEntity::NOT_NULL_C ||
-                    constr[j] == ConstraintsEntity::PRIMARY_KEY_C ||
-                    constr[j] == ConstraintsEntity::FOREIGN_KEY_C
+                    constr[j] == ConstraintsEntity::PRIMARY_KEY_C
                 ) {
                     throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
                     return false;
@@ -167,8 +163,7 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
             }
 
             for (size_t j = 0; j < constr.size(); ++j) {
-                if (constr[j] == ConstraintsEntity::NULL_C ||
-                    constr[j] == ConstraintsEntity::NOT_NULL_C ||
+                if (
                     constr[j] == ConstraintsEntity::FOREIGN_KEY_C
                 ) {
                     throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
@@ -178,22 +173,19 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
             
             hasPrimaryKey = true;
             break;
-
-        case ConstraintsEntity::FOREIGN_KEY_C:
-            for (size_t j = 0; j < constr.size(); ++j) {
-                if (constr[j] == ConstraintsEntity::NULL_C ||
-                    constr[j] == ConstraintsEntity::NOT_NULL_C ||
-                    constr[j] == ConstraintsEntity::PRIMARY_KEY_C
-                ) {
-                    throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
-                    return false;
-                }
-            }
-            break;
         default: 
             break;
         }
     }
 
     return true;
+}
+
+bool erconv::TEntityField::HasConstraint(const ConstraintsEntity &con) const {
+    for (const auto& c : Constraints) {
+        if (c == con) {
+            return true;
+        }
+    }
+    return false;
 }

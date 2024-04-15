@@ -1,6 +1,8 @@
 #include "Errors.h"
 
-erconv::TError::TError(const ErrorsType & err) 
+erconv::TError::TError(const std::string &message) : msg(message), TypeError(ErrorsType::DEFAULT_E) { }
+
+erconv::TError::TError(const ErrorsType &err)
 {
     switch (err) {
     // ENTITIES
