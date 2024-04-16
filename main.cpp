@@ -1,7 +1,9 @@
-#include "Model.h"
+#include "cli/ConsoleMessage.h"
 
 using namespace erconv;
 
-int main() { 
+int main() {
+    HelloConsoleMessage();
+
     return 0;
 }

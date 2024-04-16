@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "Entity.h"
+#include "base/Entity.h"
 
 TEST(TestMethodAddField, BasedTest) {
     erconv::Entity Test("Test");

@@ -26,9 +26,16 @@ add_library(${PROJECT_NAME}_lib SHARED ${sources})
 
 enable_testing()
 
-add_executable(${PROJECT_NAME}_exe main.cpp)
+add_executable(${PROJECT_NAME}_cli main.cpp)
 target_link_libraries(
-    ${PROJECT_NAME}_exe 
+    ${PROJECT_NAME}_cli 
+    PRIVATE ${PROJECT_NAME}_lib
+)
+
+# temporary (there will be Qt build)
+add_executable(${PROJECT_NAME}_gui gui-main.cpp)
+target_link_libraries(
+    ${PROJECT_NAME}_gui
     PRIVATE ${PROJECT_NAME}_lib
 )
 
