@@ -6,6 +6,8 @@
 #include <memory>
 #include <utility>
 #include <set>
+#include <unordered_map>
+
 #include "Entity.h"
 #include "Relationship.h"
 #include "Errors.h"
@@ -13,12 +15,12 @@
 namespace erconv {
 
     class ERModel {
-
     public:
-        ERModel() : entities(), relationships() {}
-        ~ERModel() = default;
+        using EntityID = size_t;
+        using RelationshipID = size_t;
 
-    // СОЗДАНИЕ/УДАЛЕНИЕ:
+        ERModel() = default;
+        ~ERModel() = default;
 
         bool AddEntity(const std::string name);
 
@@ -43,8 +45,6 @@ namespace erconv {
                                 const std::string &rhsEntityName,
                                 const std::string &foreignKey);
 
-    // ГЕТТЕРЫ:
-
         const Entity& GetEntity(const std::string& name);
 
         const Relationship& GetRelationship(const std::string &lhsEntityName, 
@@ -56,8 +56,6 @@ namespace erconv {
         const std::vector<Relationship>& GetRelationships() const;
 
         const std::vector<Relationship> GetConnectedRelationships(const Entity& entity) const;
-
-    // ПРОВЕРКА:
 
         bool IsEmpty();
 
@@ -82,8 +80,11 @@ namespace erconv {
         std::vector<Entity> entities;
         std::vector<Relationship> relationships;
 
-        // ... еще чьи-то IDs
+        std::unordered_map<EntityID, Entity> entities1;
+        std::unordered_map<RelationshipID, Entity> relationships1;
 
+        EntityID maxEntityID = 0;
+        RelationshipID maxRelationshipID = 0;
     };
 
 }; // namespace erconv
