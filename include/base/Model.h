@@ -8,9 +8,11 @@
 #include <set>
 #include <unordered_map>
 
-#include "Entity.h"
-#include "Relationship.h"
-#include "Errors.h"
+#include "base/Entity.h"
+#include "base/Relationship.h"
+#include "base/Errors.h"
+#include "base/Graph.h"
+#include "base/IDManager.h"
 
 namespace erconv {
 
@@ -22,15 +24,12 @@ namespace erconv {
         ERModel() = default;
         ~ERModel() = default;
 
-        bool AddEntity(const std::string name);
-
-        bool AddEntity(Entity& entity);
-
+        EntityID AddEntity(const std::string name);
+        EntityID AddEntity(Entity& entity);
         bool AddEntityField(const std::string   entityName, 
                             const std::string   fieldName, 
                             const DataTypeEntity &fieldType, 
                             const std::vector<ConstraintsEntity> &fieldConstr);
-
         bool AddRelationship(TypeRelationship type,
                              const std::string &lhsEntityName, 
                              const std::string &rhsEntityName,
@@ -38,26 +37,22 @@ namespace erconv {
                              const std::string _name="unnamed_relation");
 
         bool RemoveEntity(const std::string& name);
-
         bool RemoveEntityField(const std::string& name, const std::string& fieldName);
-
         bool RemoveRelationship(const std::string &lhsEntityName, 
                                 const std::string &rhsEntityName,
                                 const std::string &foreignKey);
 
+        EntityID GetEntityIDByName(const std::string& name);
         const Entity& GetEntity(const std::string& name);
-
         const Relationship& GetRelationship(const std::string &lhsEntityName, 
                                             const std::string &rhsEntityName,
                                             const std::string &foreignKey);
-
         const std::vector<Entity>& GetEntities() const;
-
         const std::vector<Relationship>& GetRelationships() const;
-
         const std::vector<Relationship> GetConnectedRelationships(const Entity& entity) const;
 
         bool IsEmpty();
+        bool HasEntityWithName(const std::string& name);
 
     private:
         const Entity* findEntity(const std::string& name);
@@ -80,11 +75,11 @@ namespace erconv {
         std::vector<Entity> entities;
         std::vector<Relationship> relationships;
 
-        std::unordered_map<EntityID, Entity> entities1;
-        std::unordered_map<RelationshipID, Entity> relationships1;
-
-        EntityID maxEntityID = 0;
-        RelationshipID maxRelationshipID = 0;
+        std::unordered_map<std::string, EntityID> namesToIDsMapping;
+        erconv::IDManager idmEntities, idmRelationships;
+        std::unordered_map<EntityID, Entity> entitiesMapping;
+        std::unordered_map<RelationshipID, Relationship> relationshipsMapping;
+        erconv::DirectedGraph<EntityID, RelationshipID> graph;
     };
 
-}; // namespace erconv
+} // namespace erconv

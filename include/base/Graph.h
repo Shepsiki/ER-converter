@@ -11,6 +11,8 @@ namespace erconv {
 template <class V = size_t, class E = size_t>
 class DirectedGraph {
 public:
+    using Edge = std::pair<V, V>;
+
     DirectedGraph() = default;
 
     void __protoprint() {
@@ -91,6 +93,68 @@ public:
         }
     }
 
+    bool HasEdge(const E& edge) {
+        if (edges.count(edge) == 0) {
+            return false;
+        }
+        return true;
+    }
+
+    bool HasVertex(const V& vertex) {
+        if (vertices.count(vertex) == 0) {
+            return false;
+        }
+        return true;
+    }
+
+    const std::set<V>& GetVertices() {
+        return vertices;
+    }
+
+    const std::map<E, Edge>& GetEdges() {
+        return edges;
+    }
+
+    Edge GetEdge(const E& edge) {
+        return edges[edge];
+    }
+
+    std::vector<E> GetEdgesFromCurrent(const V& current) {
+        existenceCheckV(current);
+        std::vector<V> result;
+        for (const auto& p : edgeList[current]) {
+            result.push_back(p.second);
+        }
+        return result;
+    }
+
+    std::vector<E> GetEdgesToCurrent(const V& current) {
+        existenceCheckV(current);
+        std::vector<V> result;
+        for (const auto& p : edgeListReversed[current]) {
+            result.push_back(p.second);
+        }
+        return result;
+    }
+
+    std::set<V> GetVerticesReachableFromCurrent(const V& current) {
+        existenceCheckV(current);
+        std::set<V> result;
+        for (const auto& p : edgeList[current]) {
+            result.insert(p.first);
+        }
+        return result;
+    } 
+
+    std::set<V> GetVerticesCurrentReachableFrom(const V& current) {
+        existenceCheckV(current);
+        std::set<V> result;
+        for (const auto& p : edgeListReversed[current]) {
+            result.insert(p.first);
+        }
+        return result;
+    }
+
     // !!! Loop is not a cycle !!!
     bool HasCycle() {
         std::map<V, int> indicator;
@@ -127,7 +191,6 @@ public:
 
 private:
     using EdgeDirection = std::pair<V, E>;
-    using Edge = std::pair<V, V>;
 
     std::set<V> vertices;
     std::map<E, Edge> edges;
@@ -174,6 +237,18 @@ private:
         }
         result.push_back(current);
         return false;
+    }
+
+    void existenceCheckV(const V& v) {
+        if (vertices.count(v) == 0) {
+            throw TError("Graph: Vertex with id " + std::to_string(v) + " doesn't exist in graph.");
+        }
+    }
+
+    void existanceCheckE(const E& e) {
+        if (edges.count(e) == 0) {
+            throw TError("Graph: Edge with id " + std::to_string(e) + " doesn't exist in graph.");
+        }
     }
 };
 

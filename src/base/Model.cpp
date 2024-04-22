@@ -4,50 +4,40 @@ using namespace erconv;
 
 // СОЗДАНИЕ/УДАЛЕНИЕ:
 
-bool ERModel::AddEntity(const std::string name) {
-    // Check if an entity with the same name already exists
-    if (findEntity(name) != nullptr) {
-        throw TError(ErrorsType::EXISTING_ENTITY_NAME_E);
-        return false;
-    }
-    if (!isValidName(name)) {
-        throw TError(ErrorsType::INVALID_ENTITY_NAME_E);
-        return false;
-    }
-
-    // Create and add the new entity
+ERModel::EntityID ERModel::AddEntity(const std::string name) {
     Entity newEntity(name);
-    entities.push_back(newEntity);
+    AddEntity(newEntity);
     return true;
 }
 
-bool ERModel::AddEntity(Entity& entity) {
+ERModel::EntityID ERModel::AddEntity(Entity& entity) {
     // Check if an entity with the same name already exists
-    if (findEntity(entity.GetName()) != nullptr) {
+    if (HasEntityWithName(entity.GetName())) {
         throw TError(ErrorsType::EXISTING_ENTITY_NAME_E);
-        return false;
-    }
-    if (!isValidName(entity.GetName())) {
-        throw TError(ErrorsType::INVALID_ENTITY_NAME_E);
-        return false;
     }
     entities.push_back(entity);
+    EntityID newId = idmEntities.NewID();
+    entitiesMapping[newId] = entity;
+    namesToIDsMapping[entity.GetName()] = newId;
+    graph.AddVertex(newId);
     return true;
 }
 
 bool ERModel::AddEntityField(const std::string entityName, 
-                    const std::string fieldName, 
-                    const DataTypeEntity & fieldType, 
-                    const std::vector<ConstraintsEntity> & fieldConstr) 
-    {
-    auto entIter = findEntityIter(entityName);
-    if (entIter != entities.end()) {
-        Entity& ent = *entIter;
-        return ent.AddField(fieldName, fieldType, fieldConstr);
-    } else {
+                             const std::string fieldName, 
+                             const DataTypeEntity & fieldType, 
+                             const std::vector<ConstraintsEntity> & fieldConstr) 
+{
+    if (!HasEntityWithName(entityName)) {
         throw TError(ErrorsType::NOT_FOUND_ENTITY_FIELD_NAME_E);
-        return false;
     }
+    Entity& ent = entitiesMapping[namesToIDsMapping[entityName]];
+    for (const auto& c : fieldConstr) {
+        if (c == ConstraintsEntity::FOREIGN_KEY_C) {
+            throw TError("ERModel: Trying to add entity with foreign key.");
+        }
+    }
+    return ent.AddField(fieldName, fieldType, fieldConstr);
 }
 
 bool ERModel::AddRelationship(TypeRelationship type,
@@ -56,14 +46,21 @@ bool ERModel::AddRelationship(TypeRelationship type,
                               const std::string &foreignKey,
                               const std::string _name)
 {
-    if (findRelationship(lhsEntityName, rhsEntityName, foreignKey) != nullptr) {
-        throw TError(ErrorsType::EXISTING_RELATIONSHIP_E);
+    for (const auto& p : relationshipsMapping) {
+        if (
+            p.second.GetLhsEntityName() == lhsEntityName &&
+            p.second.GetRhsEntityName() == rhsEntityName &&
+            p.second.GetForeignKey() == foreignKey
+        ) {
+            throw TError(ErrorsType::EXISTING_RELATIONSHIP_E);
+        }
     }
-    const Entity &lhsEnt = GetEntity(lhsEntityName); // Если что,
-    const Entity &rhsEnt = GetEntity(rhsEntityName); // прокидывается ошибка везде
 
-    const std::string &primaryKey = lhsEnt.GetPrimaryKeyName();
-    const TEntityField& field = rhsEnt.GetFieldByName(foreignKey);
+    EntityID lhs = GetEntityIDByName(lhsEntityName);
+    EntityID rhs = GetEntityIDByName(rhsEntityName);
+
+    const std::string &primaryKey = entitiesMapping[lhs].GetPrimaryKeyName();
+    const TEntityField& field = entitiesMapping[rhs].GetFieldByName(foreignKey);
     if (!field.HasConstraint(ConstraintsEntity::FOREIGN_KEY_C)) {
         throw TError("Trying to create relationship to non foreign key attribute.");
     }
@@ -79,9 +76,21 @@ bool ERModel::AddRelationship(TypeRelationship type,
     }
     
     Relationship newRel(this, type, lhsEntityName, rhsEntityName, newName);
-
+    RelationshipID relId = idmRelationships.NewID();
+    
+    // Trying to add in graph:
+    graph.AddEdge(rhs, lhs, relId);
+    if (graph.HasCycle()) {
+        graph.RemoveEdge(relId);
+        throw TError("ERModel: Trying to add cyclic dependencies in relationships graph.");
+    }
     newRel.SetPrimaryKey(primaryKey);
     newRel.SetForeignKey(foreignKey);
+    if (!entitiesMapping[rhs].SetForeignKeyForField(foreignKey)) {
+        // <ENDED HERE> %%%
+    }
+    // Meow
+    relationshipsMapping[relId] = newRel;
 
     relationships.push_back(newRel);
 
@@ -141,13 +150,18 @@ bool ERModel::RemoveRelationship(const std::string &lhsEntityName,
 
 // ГЕТТЕРЫ:
 
-const Entity& ERModel::GetEntity(const std::string& name) {
-    const Entity* ent = findEntity(name);
-    if (ent != nullptr) {
-        return *ent;
+ERModel::EntityID ERModel::GetEntityIDByName(const std::string& name) {
+    if (!HasEntityWithName(name)) {
+        throw TError(ErrorsType::NOT_FOUND_ENTITY_NAME_E); 
     }
+    return namesToIDsMapping[name];
+}
 
-    throw TError(ErrorsType::NOT_FOUND_ENTITY_NAME_E); //
+const Entity& ERModel::GetEntity(const std::string& name) {
+    if (!HasEntityWithName(name)) {
+        throw TError(ErrorsType::NOT_FOUND_ENTITY_NAME_E); 
+    }
+    return entitiesMapping[namesToIDsMapping[name]];
 }
 
 const Relationship& ERModel::GetRelationship(const std::string &lhsEntityName, 
@@ -193,6 +207,12 @@ bool ERModel::IsEmpty() {
     return entities.empty();
 }
 
+bool ERModel::HasEntityWithName(const std::string& name) {
+    if (namesToIDsMapping.count(name) != 0) {
+        return true;
+    }
+    return false;
+}
 
 // PRIVATE SCOPE:
 

@@ -1,4 +1,5 @@
 #include "base/Entity.h"
+#include "Entity.h"
 
 /*  
     Simple method to added new field in Entity
@@ -76,6 +77,21 @@ const erconv::TEntityField & erconv::Entity::GetFieldByName(const std::string & 
     }
 
     throw TError(ErrorsType::NOT_FOUND_ENTITY_FIELD_NAME_E);
+}
+
+bool erconv::Entity::SetForeignKeyForField(const std::string &fieldName) {
+    for (auto& f : Fields) {
+        if (f.Name == fieldName) {
+            try {
+                f.Constraints.push_back(ConstraintsEntity::FOREIGN_KEY_C);
+                checkIsValidDataTypeAndConstraints(f.DataType, f.Constraints);
+            } catch (...) {
+                return false;
+            }
+            return true;
+        }
+    } 
+    return false;
 }
 
 const std::vector<erconv::TEntityField>::iterator erconv::Entity::findName(const std::string & nameF) 
