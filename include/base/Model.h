@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <algorithm>
 #include <iostream>
 #include <vector>
@@ -30,55 +31,64 @@ namespace erconv {
                             const std::string   fieldName, 
                             const DataTypeEntity &fieldType, 
                             const std::vector<ConstraintsEntity> &fieldConstr);
-        bool AddRelationship(TypeRelationship type,
-                             const std::string &lhsEntityName, 
-                             const std::string &rhsEntityName,
-                             const std::string &foreignKey,
-                             const std::string _name="unnamed_relation");
+        RelationshipID AddRelationship(TypeRelationship type,
+                                       const std::string &lhsEntityName, 
+                                       const std::string &rhsEntityName,
+                                       const std::string &foreignKey,
+                                       const std::string _name="unnamed_relation");
 
+        void RemoveEntity(const EntityID id);
         bool RemoveEntity(const std::string& name);
         bool RemoveEntityField(const std::string& name, const std::string& fieldName);
+        void RemoveRelationship(const RelationshipID id);
+        // legacy:
         bool RemoveRelationship(const std::string &lhsEntityName, 
                                 const std::string &rhsEntityName,
                                 const std::string &foreignKey);
 
         EntityID GetEntityIDByName(const std::string& name);
         const Entity& GetEntity(const std::string& name);
+        const Entity& GetEntity(const EntityID id);
+        const Relationship& GetRelationship(const RelationshipID id);
         const Relationship& GetRelationship(const std::string &lhsEntityName, 
                                             const std::string &rhsEntityName,
                                             const std::string &foreignKey);
-        const std::vector<Entity>& GetEntities() const;
-        const std::vector<Relationship>& GetRelationships() const;
-        const std::vector<Relationship> GetConnectedRelationships(const Entity& entity) const;
+        std::vector<EntityID> GetEntities() const;
+        std::vector<RelationshipID> GetRelationships() const;
+        const std::vector<RelationshipID> GetConnectedRelationships(const EntityID id) const;
 
         bool IsEmpty();
         bool HasEntityWithName(const std::string& name);
 
     private:
-        const Entity* findEntity(const std::string& name);
-
-        const Relationship* findRelationship(const std::string &lhsEntityName, 
-                                             const std::string &rhsEntityName,
-                                             const std::string &foreignKey);
-
-        std::vector<Entity>::iterator findEntityIter(const std::string& name);
-
-        std::vector<Relationship>::iterator findRelationshipIter(const std::string &lhsEntityName, 
-                                                                 const std::string &rhsEntityName,
-                                                                 const std::string &foreignKey);
-
-        bool removeRelationshipByRef(Relationship& rel);
 
         bool isValidName(const std::string& name);
+        // legacy: 
+        // const Entity* findEntity(const std::string& name);
+        // const Relationship* findRelationship(const std::string &lhsEntityName, 
+        //                                      const std::string &rhsEntityName,
+        //                                      const std::string &foreignKey);
+        // std::vector<Entity>::iterator findEntityIter(const std::string& name);
+        // std::vector<Relationship>::iterator findRelationshipIter(const std::string &lhsEntityName, 
+        //                                                          const std::string &rhsEntityName,
+        //                                                          const std::string &foreignKey);
+        // bool removeRelationshipByRef(Relationship& rel);
 
     private:
-        std::vector<Entity> entities;
-        std::vector<Relationship> relationships;
+        using TripleString = std::array<std::string, 3>;
 
-        std::unordered_map<std::string, EntityID> namesToIDsMapping;
+        // Mapping names -> id's
+        std::unordered_map<std::string, EntityID> entitiesNamesToIDsMapping;
+        std::map<TripleString, RelationshipID> relationshipsToIDsMapping;
+
+        // Id generators
         erconv::IDManager idmEntities, idmRelationships;
+
+        // Containers
         std::unordered_map<EntityID, Entity> entitiesMapping;
         std::unordered_map<RelationshipID, Relationship> relationshipsMapping;
+        
+        // Graph of the model
         erconv::DirectedGraph<EntityID, RelationshipID> graph;
     };
 

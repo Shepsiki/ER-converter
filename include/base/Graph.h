@@ -93,33 +93,33 @@ public:
         }
     }
 
-    bool HasEdge(const E& edge) {
+    bool HasEdge(const E& edge) const {
         if (edges.count(edge) == 0) {
             return false;
         }
         return true;
     }
 
-    bool HasVertex(const V& vertex) {
+    bool HasVertex(const V& vertex) const {
         if (vertices.count(vertex) == 0) {
             return false;
         }
         return true;
     }
 
-    const std::set<V>& GetVertices() {
+    const std::set<V>& GetVertices() const {
         return vertices;
     }
 
-    const std::map<E, Edge>& GetEdges() {
+    const std::map<E, Edge>& GetEdges() const {
         return edges;
     }
 
-    Edge GetEdge(const E& edge) {
+    Edge GetEdge(const E& edge) const {
         return edges[edge];
     }
 
-    std::vector<E> GetEdgesFromCurrent(const V& current) {
+    std::vector<E> GetEdgesFromCurrent(const V& current) const {
         existenceCheckV(current);
         std::vector<V> result;
         for (const auto& p : edgeList[current]) {
@@ -128,7 +128,7 @@ public:
         return result;
     }
 
-    std::vector<E> GetEdgesToCurrent(const V& current) {
+    std::vector<E> GetEdgesToCurrent(const V& current) const {
         existenceCheckV(current);
         std::vector<V> result;
         for (const auto& p : edgeListReversed[current]) {
@@ -137,7 +137,7 @@ public:
         return result;
     }
 
-    std::set<V> GetVerticesReachableFromCurrent(const V& current) {
+    std::set<V> GetVerticesReachableFromCurrent(const V& current) const {
         existenceCheckV(current);
         std::set<V> result;
         for (const auto& p : edgeList[current]) {
@@ -146,7 +146,7 @@ public:
         return result;
     } 
 
-    std::set<V> GetVerticesCurrentReachableFrom(const V& current) {
+    std::set<V> GetVerticesCurrentReachableFrom(const V& current) const {
         existenceCheckV(current);
         std::set<V> result;
         for (const auto& p : edgeListReversed[current]) {
@@ -156,7 +156,7 @@ public:
     }
 
     // !!! Loop is not a cycle !!!
-    bool HasCycle() {
+    bool HasCycle() const {
         std::map<V, int> indicator;
         for (const auto& v : vertices) {
             indicator[v] = 0;
@@ -171,7 +171,7 @@ public:
         return false;
     }
 
-    std::vector<V> GetVerticesInTopologicalOrder() {
+    std::vector<V> GetVerticesInTopologicalOrder() const {
         if (HasCycle()) {
             throw TError("Graph has cycles!");
         }

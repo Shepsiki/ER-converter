@@ -94,6 +94,24 @@ bool erconv::Entity::SetForeignKeyForField(const std::string &fieldName) {
     return false;
 }
 
+bool erconv::Entity::UnsetForeignKeyForField(const std::string &fieldName) {
+    size_t shift = 0;
+    for (auto& f : Fields) {
+        if (f.Name == fieldName) {
+            for (size_t i = 0; i < f.Constraints.size(); i++) {
+                if (f.Constraints[i] == ConstraintsEntity::FOREIGN_KEY_C) {
+                    shift++;
+                } else {
+                    f.Constraints[i - shift] = f.Constraints[i];
+                }
+            }
+            f.Constraints.resize(f.Constraints.size() - shift);
+            break;
+        }
+    }
+    return (shift > 0);
+}
+
 const std::vector<erconv::TEntityField>::iterator erconv::Entity::findName(const std::string & nameF) 
 {
     for (int i = 0; i < Fields.size(); ++i) {
