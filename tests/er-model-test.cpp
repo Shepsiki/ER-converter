@@ -65,14 +65,10 @@ TEST_F(ERModelTest, AddEntityField_EntityNotFound) {
 }
 
 TEST_F(ERModelTest, AddRelationship_ValidRelationship) {
-    try {
     erModel.AddEntity(ent1);
     erModel.AddEntity(ent2);
     // Add a valid relationship
-    EXPECT_TRUE(erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2"));
-    } catch (const TError& err) {
-        std::cout << "M: " << err.GetMessage() << std::endl;
-    }
+    EXPECT_NO_THROW(erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2"));
 }
 
 TEST_F(ERModelTest, AddRelationship_DuplicateName) {
