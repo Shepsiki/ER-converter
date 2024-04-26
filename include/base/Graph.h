@@ -15,43 +15,13 @@ public:
 
     DirectedGraph() = default;
 
-    void __protoprint() {
-        std::cout << "V:\n";
-        for (const auto i : vertices) {
-            std::cout << i << " ";
-        }
-        std::cout << std::endl;
-
-        std::cout << "E:\n";
-        for (const auto i : edges) {
-            std::cout << i.first << " ";
-        }
-        std::cout << std::endl;
-
-        std::cout << "EL:\n";
-        for (const auto i : edgeList) {
-            std::cout << i.first <<  ": ";
-            for (const auto p : i.second) {
-                std::cout << "(" << p.first << " " << p.second << ") ";
-            }
-        }
-        std::cout << std::endl;
-
-        std::cout << "ELR:\n";
-        for (const auto i : edgeListReversed) {
-            std::cout << i.first <<  ": ";
-            for (const auto p : i.second) {
-                std::cout << "(" << p.first << " " << p.second << ") ";
-            }
-        }
-        std::cout << std::endl;
-    }
-
     bool AddVertex(const V& vertex) {
         if (vertices.count(vertex) != 0) {
             return false;
         }
         vertices.insert(vertex);
+        edgeList[vertex];
+        edgeListReversed[vertex];
         return true;
     }
 
@@ -122,7 +92,7 @@ public:
     std::vector<E> GetEdgesFromCurrent(const V& current) const {
         existenceCheckV(current);
         std::vector<V> result;
-        for (const auto& p : edgeList[current]) {
+        for (const auto& p : edgeList.at(current)) {
             result.push_back(p.second);
         }
         return result;
@@ -131,7 +101,7 @@ public:
     std::vector<E> GetEdgesToCurrent(const V& current) const {
         existenceCheckV(current);
         std::vector<V> result;
-        for (const auto& p : edgeListReversed[current]) {
+        for (const auto& p : edgeListReversed.at(current)) {
             result.push_back(p.second);
         }
         return result;
@@ -140,7 +110,7 @@ public:
     std::set<V> GetVerticesReachableFromCurrent(const V& current) const {
         existenceCheckV(current);
         std::set<V> result;
-        for (const auto& p : edgeList[current]) {
+        for (const auto& p : edgeList.at(current)) {
             result.insert(p.first);
         }
         return result;
@@ -149,7 +119,7 @@ public:
     std::set<V> GetVerticesCurrentReachableFrom(const V& current) const {
         existenceCheckV(current);
         std::set<V> result;
-        for (const auto& p : edgeListReversed[current]) {
+        for (const auto& p : edgeListReversed.at(current)) {
             result.insert(p.first);
         }
         return result;
@@ -177,7 +147,7 @@ public:
         }
         std::vector<V> sources;
         for (const auto& v : vertices) {
-            if (edgeListReversed[v].size() == 0) {
+            if (edgeListReversed.at(v).size() == 0) {
                 sources.push_back(v);
             }
         }
@@ -200,9 +170,9 @@ private:
     bool internalRecursiveDFSForCycleDetection(
         std::map<V, int>& indicator,
         const V& current
-    ) {
+    ) const {
         indicator[current] = 1;
-        for (const auto& dir : edgeList[current]) {
+        for (const auto& dir : edgeList.at(current)) {
             V to = dir.first;
             if (to == current) {
                 continue;
@@ -227,9 +197,9 @@ private:
         std::map<V, int>& indicator,
         std::vector<V>& result,
         const V& current
-    ) {
+    ) const {
         indicator[current] = 1;
-        for (const auto& dir : edgeList[current]) {
+        for (const auto& dir : edgeList.at(current)) {
             V to = dir.first;
             if (indicator[to] == 0) {
                 internalRecursiveDFSForTopologicalSort(indicator, result, to);
@@ -239,13 +209,13 @@ private:
         return false;
     }
 
-    void existenceCheckV(const V& v) {
+    void existenceCheckV(const V& v) const {
         if (vertices.count(v) == 0) {
             throw TError("Graph: Vertex with id " + std::to_string(v) + " doesn't exist in graph.");
         }
     }
 
-    void existanceCheckE(const E& e) {
+    void existanceCheckE(const E& e) const {
         if (edges.count(e) == 0) {
             throw TError("Graph: Edge with id " + std::to_string(e) + " doesn't exist in graph.");
         }

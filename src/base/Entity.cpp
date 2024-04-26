@@ -1,5 +1,4 @@
 #include "base/Entity.h"
-#include "Entity.h"
 
 /*  
     Simple method to added new field in Entity
@@ -112,8 +111,7 @@ bool erconv::Entity::UnsetForeignKeyForField(const std::string &fieldName) {
     return (shift > 0);
 }
 
-const std::vector<erconv::TEntityField>::iterator erconv::Entity::findName(const std::string & nameF) 
-{
+const std::vector<erconv::TEntityField>::iterator erconv::Entity::findName(const std::string & nameF) {
     for (int i = 0; i < Fields.size(); ++i) {
         if (Fields[i].Name == nameF) {
             return Fields.begin() + i;

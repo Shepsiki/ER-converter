@@ -5,6 +5,9 @@ using namespace erconv;
 // СОЗДАНИЕ/УДАЛЕНИЕ:
 
 ERModel::EntityID ERModel::AddEntity(const std::string name) {
+    if (!isValidName(name)) {
+        throw TError(ErrorsType::INVALID_ENTITY_NAME_E);
+    }
     Entity newEntity(name);
     AddEntity(newEntity);
     return true;
@@ -16,10 +19,10 @@ ERModel::EntityID ERModel::AddEntity(Entity& entity) {
         throw TError(ErrorsType::EXISTING_ENTITY_NAME_E);
     }
     EntityID newId = idmEntities.NewID();
-    entitiesMapping[newId] = entity;
+    entities[newId] = entity;
     entitiesNamesToIDsMapping[entity.GetName()] = newId;
     graph.AddVertex(newId);
-    return true;
+    return newId;
 }
 
 bool ERModel::AddEntityField(const std::string entityName, 
@@ -30,7 +33,7 @@ bool ERModel::AddEntityField(const std::string entityName,
     if (!HasEntityWithName(entityName)) {
         throw TError(ErrorsType::NOT_FOUND_ENTITY_FIELD_NAME_E);
     }
-    Entity& ent = entitiesMapping[entitiesNamesToIDsMapping[entityName]];
+    Entity& ent = entities[entitiesNamesToIDsMapping[entityName]];
     for (const auto& c : fieldConstr) {
         if (c == ConstraintsEntity::FOREIGN_KEY_C) {
             throw TError("ERModel: Trying to add entity with foreign key.");
@@ -52,11 +55,8 @@ ERModel::RelationshipID ERModel::AddRelationship(TypeRelationship type,
     EntityID lhs = GetEntityIDByName(lhsEntityName);
     EntityID rhs = GetEntityIDByName(rhsEntityName);
 
-    const std::string &primaryKey = entitiesMapping[lhs].GetPrimaryKeyName();
-    const TEntityField& field = entitiesMapping[rhs].GetFieldByName(foreignKey);
-    if (!field.HasConstraint(ConstraintsEntity::FOREIGN_KEY_C)) {
-        throw TError("Trying to create relationship to non foreign key attribute.");
-    }
+    const std::string &primaryKey = entities[lhs].GetPrimaryKeyName();
+    const TEntityField& field = entities[rhs].GetFieldByName(foreignKey);
 
     std::string newName = _name;
     if (_name == "unnamed_relation") {
@@ -78,45 +78,44 @@ ERModel::RelationshipID ERModel::AddRelationship(TypeRelationship type,
     }
     newRel.SetPrimaryKey(primaryKey);
     newRel.SetForeignKey(foreignKey);
-    if (entitiesMapping[rhs].GetFieldByName(foreignKey).HasConstraint(ConstraintsEntity::FOREIGN_KEY_C)) {
-        throw TError("Right entity already has reference in the field " + foreignKey);
-    }
-    if (!entitiesMapping[rhs].SetForeignKeyForField(foreignKey)) {
+    if (!entities[rhs].SetForeignKeyForField(foreignKey)) {
         throw TError("Can't create such relationship! (Can't set foreign key to " + foreignKey + ")");
     }
-    relationshipsMapping[relId] = newRel;
 
-    return true;
+    relationshipsToIDsMapping[info] = relId;
+    relationships.insert({relId, newRel});
+
+    return relId;
 }
 
 void ERModel::RemoveEntity(const EntityID id) {
-    if (entitiesMapping.count(id) == 0) {
+    if (entities.count(id) == 0) {
         throw TError("Invalid entity ID!");
     }
     graph.RemoveVertex(id);
     std::vector<RelationshipID> relToDelete;
-    for (const auto& p : relationshipsMapping) {
+    for (const auto& p : relationships) {
         auto relId = p.first;
         if (!graph.HasEdge(relId)) {
             relToDelete.push_back(relId);
         }
     }
     for (const auto& relId : relToDelete) {
-        auto& rel = relationshipsMapping[relId];
+        auto& rel = relationships[relId];
         TripleString info = {
             rel.GetLhsEntityName(),
             rel.GetRhsEntityName(),
             rel.GetForeignKey()
         };
-        entitiesMapping[
+        entities[
             entitiesNamesToIDsMapping[rel.GetRhsEntityName()]
         ].UnsetForeignKeyForField(rel.GetForeignKey());
         relationshipsToIDsMapping.erase(info);
-        relationshipsMapping.erase(relId);
+        relationships.erase(relId);
     }
 
-    entitiesNamesToIDsMapping.erase(entitiesMapping[id].GetName());
-    entitiesMapping.erase(id);
+    entitiesNamesToIDsMapping.erase(entities[id].GetName());
+    entities.erase(id);
 }
 
 bool ERModel::RemoveEntity(const std::string& name) {
@@ -124,6 +123,7 @@ bool ERModel::RemoveEntity(const std::string& name) {
         throw TError(ErrorsType::NOT_FOUND_ENTITY_FIELD_NAME_E);
     }
     RemoveEntity(entitiesNamesToIDsMapping[name]);
+    return true;
 }
 
 bool ERModel::RemoveEntityField(const std::string& name, const std::string& fieldName) {
@@ -131,24 +131,26 @@ bool ERModel::RemoveEntityField(const std::string& name, const std::string& fiel
         throw TError(ErrorsType::INVALID_ENTITY_NAME_E);
     }
     // TODO: проверка на наличие связи к полю, если он помечен FOREIGN KEY
-    Entity& entity = entitiesMapping[entitiesNamesToIDsMapping[name]];
-    entity.DeleteField(fieldName);
-    return false; 
+    Entity& entity = entities[entitiesNamesToIDsMapping[name]];
+    if (!entity.DeleteField(fieldName)) {
+        throw TError(ErrorsType::INVALID_ENTITY_FIELD_NAME_E);
+    }
+    return true; 
 }
 
 void ERModel::RemoveRelationship(const RelationshipID id) {
-    if (relationshipsMapping.count(id) == 0) {
+    if (relationships.count(id) == 0) {
         throw TError("Invalid relationship ID!");
     }
     graph.RemoveEdge(id);
-    auto& rel = relationshipsMapping[id];
+    auto& rel = relationships[id];
     TripleString info = {
         rel.GetLhsEntityName(),
         rel.GetRhsEntityName(),
         rel.GetForeignKey()
     };
-    entitiesMapping[id].UnsetForeignKeyForField(relationshipsMapping[id].GetForeignKey());
-    relationshipsMapping.erase(id);
+    entities[id].UnsetForeignKeyForField(relationships[id].GetForeignKey());
+    relationships.erase(id);
 }
 
 bool ERModel::RemoveRelationship(const std::string &lhsEntityName, 
@@ -180,38 +182,36 @@ const Entity& ERModel::GetEntity(const std::string& name) {
     if (!HasEntityWithName(name)) {
         throw TError(ErrorsType::NOT_FOUND_ENTITY_NAME_E); 
     }
-    return entitiesMapping[entitiesNamesToIDsMapping[name]];
+    return entities[entitiesNamesToIDsMapping[name]];
 }
 
 const Entity& ERModel::GetEntity(const EntityID id) {
-    if (entitiesMapping.count(id) == 0) {
+    if (entities.count(id) == 0) {
         throw TError("Invalid entity ID!");
     }
-    return entitiesMapping[id];
+    return entities[id];
 }
 
 const Relationship& ERModel::GetRelationship(const RelationshipID id) {
-    if (relationshipsMapping.count(id) == 0) {
+    if (relationships.count(id) == 0) {
         throw TError("Invalid relationship ID!");
     }
-    return relationshipsMapping[id];
+    return relationships[id];
 }
 
 const Relationship& ERModel::GetRelationship(const std::string &lhsEntityName, 
                                              const std::string &rhsEntityName,
                                              const std::string &foreignKey) {
-    // TODO: Implement method
-    // const Relationship* rel = findRelationship(lhsEntityName, rhsEntityName, foreignKey);
-    // if (rel != nullptr) {
-    //     return *rel;
-    // }
-
-    throw TError(ErrorsType::NOT_FOUND_RELATIONSHIP_E); //
+    TripleString info = {lhsEntityName, rhsEntityName, foreignKey};
+    if (relationshipsToIDsMapping.count(info) == 0) {
+        throw TError(ErrorsType::NOT_FOUND_RELATIONSHIP_E);
+    }
+    return relationships[relationshipsToIDsMapping[info]];
 }
 
 std::vector<ERModel::EntityID> ERModel::GetEntities() const {
     std::vector<EntityID> result;
-    for (const auto& p : entitiesMapping) {
+    for (const auto& p : entities) {
         result.push_back(p.first);
     }
     return result;
@@ -219,7 +219,7 @@ std::vector<ERModel::EntityID> ERModel::GetEntities() const {
 
 std::vector<ERModel::RelationshipID> ERModel::GetRelationships() const {
     std::vector<EntityID> result;
-    for (const auto& p : relationshipsMapping) {
+    for (const auto& p : relationships) {
         result.push_back(p.first);
     }
     return result;
@@ -227,7 +227,7 @@ std::vector<ERModel::RelationshipID> ERModel::GetRelationships() const {
 
 const std::vector<ERModel::RelationshipID> ERModel::GetConnectedRelationships(const EntityID id) const {
     std::vector<RelationshipID> connectedRelationships;
-    if (relationshipsMapping.count(id) == 0) {
+    if (relationships.count(id) == 0) {
         throw TError("Invalid entity ID!");
     }
     auto v1 = graph.GetEdgesFromCurrent(id);
@@ -245,7 +245,7 @@ const std::vector<ERModel::RelationshipID> ERModel::GetConnectedRelationships(co
 // ПРОВЕРКА:
 
 bool ERModel::IsEmpty() {
-    return entitiesMapping.empty();
+    return entities.empty();
 }
 
 bool ERModel::HasEntityWithName(const std::string& name) {
@@ -254,59 +254,6 @@ bool ERModel::HasEntityWithName(const std::string& name) {
     }
     return false;
 }
-
-// PRIVATE SCOPE:
-
-// const Entity* ERModel::findEntity(const std::string& name) {
-//     auto it = findEntityIter(name);
-//     if (it != entities.end()) {
-//         return std::addressof(*it);
-//     } else {
-//         return nullptr;
-//     }
-// }
-
-// const Relationship* ERModel::findRelationship(const std::string &lhsEntityName, 
-//                                               const std::string &rhsEntityName,
-//                                               const std::string &foreignKey) 
-// {
-//     auto it = findRelationshipIter(lhsEntityName, rhsEntityName, foreignKey);
-//     if (it != relationships.end()) {
-//         return std::addressof(*it);
-//     } else {
-//         return nullptr;
-//     }
-// }
-
-// std::vector<Entity>::iterator ERModel::findEntityIter(const std::string& name) {
-//     return std::find_if(entities.begin(), entities.end(), [name](const Entity& entity) {
-//         return entity.GetName() == name;
-//     });
-// }
-
-// std::vector<Relationship>::iterator ERModel::findRelationshipIter(const std::string &lhsEntityName, 
-//                                                                   const std::string &rhsEntityName,
-//                                                                   const std::string &foreignKey) 
-// {
-//     return std::find_if(relationships.begin(), relationships.end(), 
-//         [&](const Relationship& relationship) {
-//             return relationship.GetLhsEntityName() == lhsEntityName &&
-//                    relationship.GetRhsEntityName() == rhsEntityName &&
-//                    relationship.GetForeignKey()    == foreignKey;
-//         });
-// }
-
-// bool ERModel::removeRelationshipByRef(Relationship &rel) {
-//     auto it = findRelationshipIter(rel.GetLhsEntityName(), rel.GetRhsEntityName(), rel.GetForeignKey());
-
-//     if (it != relationships.end()) {
-//         relationships.erase(it);
-//         return true; // Relationship removed successfully
-//     } else {
-//         throw TError(ErrorsType::NOT_FOUND_RELATIONSHIP_E);
-//         return false; // Relationship not found
-//     }
-// }
 
 bool ERModel::isValidName(const std::string& name) {
     if (name.size() == 0) {
@@ -322,4 +269,17 @@ bool ERModel::isValidName(const std::string& name) {
         }
     }
     return true;
+}
+
+std::vector<ERModel::EntityID> ERModel::GetEntitesInTopologicalOrder() const {
+    return graph.GetVerticesInTopologicalOrder();
+}
+
+std::vector<ERModel::EntityID> ERModel::GetEntitiesOnWhomCurrentDepends(const EntityID& id) const {
+    auto s = graph.GetVerticesReachableFromCurrent(id);
+    std::vector<EntityID> result;
+    for (const auto& i : s) {
+        result.push_back(i);
+    }
+    return result;
 }

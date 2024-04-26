@@ -41,7 +41,6 @@ namespace erconv {
         bool RemoveEntity(const std::string& name);
         bool RemoveEntityField(const std::string& name, const std::string& fieldName);
         void RemoveRelationship(const RelationshipID id);
-        // legacy:
         bool RemoveRelationship(const std::string &lhsEntityName, 
                                 const std::string &rhsEntityName,
                                 const std::string &foreignKey);
@@ -60,21 +59,15 @@ namespace erconv {
         bool IsEmpty();
         bool HasEntityWithName(const std::string& name);
 
-    private:
+        // Special functions:
+        std::vector<EntityID> GetEntitesInTopologicalOrder() const;
+        std::vector<EntityID> GetEntitiesOnWhomCurrentDepends(const EntityID& id) const;
 
+    private:
         bool isValidName(const std::string& name);
-        // legacy: 
-        // const Entity* findEntity(const std::string& name);
-        // const Relationship* findRelationship(const std::string &lhsEntityName, 
-        //                                      const std::string &rhsEntityName,
-        //                                      const std::string &foreignKey);
-        // std::vector<Entity>::iterator findEntityIter(const std::string& name);
-        // std::vector<Relationship>::iterator findRelationshipIter(const std::string &lhsEntityName, 
-        //                                                          const std::string &rhsEntityName,
-        //                                                          const std::string &foreignKey);
-        // bool removeRelationshipByRef(Relationship& rel);
 
     private:
+        // Stores info about relationship
         using TripleString = std::array<std::string, 3>;
 
         // Mapping names -> id's
@@ -85,8 +78,8 @@ namespace erconv {
         erconv::IDManager idmEntities, idmRelationships;
 
         // Containers
-        std::unordered_map<EntityID, Entity> entitiesMapping;
-        std::unordered_map<RelationshipID, Relationship> relationshipsMapping;
+        std::unordered_map<EntityID, Entity> entities;
+        std::unordered_map<RelationshipID, Relationship> relationships;
         
         // Graph of the model
         erconv::DirectedGraph<EntityID, RelationshipID> graph;
