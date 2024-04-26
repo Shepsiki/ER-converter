@@ -4,6 +4,9 @@
 
 namespace erconv {
 
+using EntityID = ERModel::EntityID;
+using RelationshipID = ERModel::RelationshipID;
+
 class ERModelTest : public ::testing::Test {
 protected:
     void SetUp() override {
@@ -15,7 +18,7 @@ protected:
 
         std::vector<erconv::ConstraintsEntity> constr1 {erconv::ConstraintsEntity::PRIMARY_KEY_C};
         std::vector<erconv::ConstraintsEntity> constr2;
-        std::vector<erconv::ConstraintsEntity> constr3 {erconv::ConstraintsEntity::FOREIGN_KEY_C};
+        std::vector<erconv::ConstraintsEntity> constr3;
 
         ent1.AddField("Id1", erconv::DataTypeEntity::INT_T, constr1);
         ent1.AddField("Name1", erconv::DataTypeEntity::VARCHAR_T, constr2);
@@ -42,14 +45,6 @@ protected:
 
 // Creation/Deletion tests
 
-TEST_F(ERModelTest, AddEntityFirst_ValidEntity) {
-    ASSERT_TRUE(erModel.AddEntity("Students"));
-}
-
-TEST_F(ERModelTest, AddEntitySecond_ValidEntity) {
-    ASSERT_TRUE(erModel.AddEntity(ent1));
-}
-
 TEST_F(ERModelTest, AddEntity_DuplicateName) {
     erModel.AddEntity("Students"); // Add an entity with the same name
     erModel.AddEntity("Facilities");
@@ -73,7 +68,7 @@ TEST_F(ERModelTest, AddRelationship_ValidRelationship) {
     erModel.AddEntity(ent1);
     erModel.AddEntity(ent2);
     // Add a valid relationship
-    EXPECT_TRUE(erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2"));
+    EXPECT_NO_THROW(erModel.AddRelationship(ONE_TO_ONE_T, "Students", "Facilities", "Address2"));
 }
 
 TEST_F(ERModelTest, AddRelationship_DuplicateName) {
@@ -228,38 +223,6 @@ TEST_F(ERModelTest, GetEntity_NonExistingEntity) {
     ASSERT_THROW(erModel.GetEntity("NonExistingEntity"), TError);
 }
 
-TEST_F(ERModelTest, GetEntities) {
-    // Add entities to the ERModel
-    erModel.AddEntity(ent1);
-    erModel.AddEntity(ent2);
-    erModel.AddEntity(ent3);
-    erModel.AddEntity(ent4);
-
-    // Get the entities from the ERModel
-    const std::vector<Entity>& entities = erModel.GetEntities();
-
-    // Assert the size of the vector
-    ASSERT_EQ(entities.size(), 4);
-
-    // Assert the content of the vector
-    ASSERT_TRUE(std::find_if(entities.begin(), entities.end(), [&](const Entity& entity) {
-        return entity.GetName() == "Students";
-    }) != entities.end());
-
-    ASSERT_TRUE(std::find_if(entities.begin(), entities.end(), [&](const Entity& entity) {
-        return entity.GetName() == "Facilities";
-    }) != entities.end());
-
-    ASSERT_TRUE(std::find_if(entities.begin(), entities.end(), [&](const Entity& entity) {
-        return entity.GetName() == "3";
-    }) != entities.end());
-
-    ASSERT_TRUE(std::find_if(entities.begin(), entities.end(), [&](const Entity& entity) {
-        return entity.GetName() == "4";
-    }) != entities.end());
-}
-
-
 TEST_F(ERModelTest, GetRelationships) {
     erModel.AddEntity(ent1);
     erModel.AddEntity(ent2);
@@ -269,7 +232,7 @@ TEST_F(ERModelTest, GetRelationships) {
     erModel.AddRelationship(ONE_TO_ONE_T, "3", "Facilities", "Address2");
 
     // Get the relationships from the ERModel
-    const std::vector<Relationship>& relationships = erModel.GetRelationships();
+    const std::vector<RelationshipID>& relationships = erModel.GetRelationships();
 
     // Assert the size of the vector
     ASSERT_EQ(relationships.size(), 2);
@@ -285,7 +248,7 @@ TEST_F(ERModelTest, GetConnectedRelationships) {
     erModel.AddRelationship(ONE_TO_ONE_T, "3", "Facilities", "Address2");
 
     // Get the connected relationships for entity ent1
-    const std::vector<Relationship>& connectedRelationships = erModel.GetConnectedRelationships(ent2);
+    const std::vector<RelationshipID>& connectedRelationships = erModel.GetConnectedRelationships(erModel.GetEntityIDByName(ent2.GetName()));
 
     // Assert the size of the vector
     ASSERT_EQ(connectedRelationships.size(), 2);
@@ -303,6 +266,88 @@ TEST_F(ERModelTest, IsEmpty) {
 
     // Now, the ERModel should not be empty
     ASSERT_FALSE(erModel.IsEmpty());
+}
+
+TEST_F(ERModelTest, PepelulkaAddonTest) {
+    try {
+
+    ERModel m;
+
+    // Entity1
+    Entity e1 = Entity("Order");
+    e1.AddField(
+        "ID", DataTypeEntity::INT_T, { ConstraintsEntity::PRIMARY_KEY_C }
+    );
+    e1.AddField(
+        "PersonID", DataTypeEntity::INT_T, { }
+    );
+    e1.AddField(
+        "ProducerID", DataTypeEntity::INT_T, { }
+    );
+
+    // Entity2
+    Entity e2 = Entity("Person");
+    e2.AddField(
+        "ID", DataTypeEntity::INT_T, { ConstraintsEntity::PRIMARY_KEY_C }
+    );
+    e2.AddField(
+        "Name", DataTypeEntity::VARCHAR_T, { }
+    );
+    e2.AddField(
+        "SomeField", DataTypeEntity::INT_T, { }
+    );
+
+    // Entity3
+    Entity e3 = Entity("Producer");
+    e3.AddField(
+        "ID", DataTypeEntity::INT_T, {ConstraintsEntity::PRIMARY_KEY_C}
+    );
+    e3.AddField(
+        "Name", DataTypeEntity::VARCHAR_T, { }
+    );
+
+    // Adding those to model:
+    EntityID e1ID = m.AddEntity(e1);
+    EntityID e2ID = m.AddEntity(e2);
+    m.AddRelationship(
+        TypeRelationship::ONE_TO_MANY_T,
+        "Person",
+        "Order",
+        "PersonID"
+    );
+    auto v = m.GetEntitesInTopologicalOrder();
+    ASSERT_EQ(v.size(), 2);
+    ASSERT_EQ(m.GetEntity(v[0]).GetName(), "Person");
+    ASSERT_EQ(m.GetEntity(v[1]).GetName(), "Order");
+
+    ASSERT_THROW(m.AddRelationship(
+        TypeRelationship::ONE_TO_MANY_T,
+        "Order",
+        "Person",
+        "SomeField"
+    ), TError);
+
+    EntityID e3ID = m.AddEntity(e3);
+
+    m.AddRelationship(
+        TypeRelationship::ONE_TO_ONE_T,
+        "Producer",
+        "Order",
+        "ProducerID"
+    );
+
+    v = m.GetEntitesInTopologicalOrder();
+
+    ASSERT_EQ(v.size(), 3);
+
+    ASSERT_EQ(m.GetEntitiesOnWhomCurrentDepends(e1ID).size(), 2);
+
+    } catch (const TError& err) {
+
+        std::cout << "Error occured: " << err.GetMessage() << std::endl;
+        EXPECT_TRUE(false);
+
+    }
 }
 
 } // namespace erconv

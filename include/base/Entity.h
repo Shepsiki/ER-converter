@@ -79,6 +79,9 @@ namespace erconv {
         const std::vector<TEntityField> & GetAllFields();
         const TEntityField & GetFieldByName(const std::string & name) const; // <-- Добавил const
 
+        bool SetForeignKeyForField(const std::string& fieldName);
+        bool UnsetForeignKeyForField(const std::string& fieldName);
+
         Entity() : EntityName("NO_NAME") {}
         std::string GetName() const;
         bool operator==(const Entity& other) const;
