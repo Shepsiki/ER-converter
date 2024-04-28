@@ -56,6 +56,7 @@ ERModel::RelationshipID ERModel::AddRelationship(TypeRelationship type,
     EntityID rhs = GetEntityIDByName(rhsEntityName);
 
     const std::string &primaryKey = entities[lhs].GetPrimaryKeyName();
+
     const TEntityField& field = entities[rhs].GetFieldByName(foreignKey);
 
     std::string newName = _name;
@@ -67,7 +68,7 @@ ERModel::RelationshipID ERModel::AddRelationship(TypeRelationship type,
     } else if (!isValidName(_name)) {
         throw TError(ErrorsType::INVALID_RELATIONSHIP_NAME_E);
     }
-    
+
     Relationship newRel(this, type, lhsEntityName, rhsEntityName, newName);
     RelationshipID relId = idmRelationships.NewID();
     // Trying to add in graph:
@@ -227,7 +228,7 @@ std::vector<ERModel::RelationshipID> ERModel::GetRelationships() const {
 
 const std::vector<ERModel::RelationshipID> ERModel::GetConnectedRelationships(const EntityID id) const {
     std::vector<RelationshipID> connectedRelationships;
-    if (relationships.count(id) == 0) {
+    if (entities.count(id) == 0) {
         throw TError("Invalid entity ID!");
     }
     auto v1 = graph.GetEdgesFromCurrent(id);
@@ -241,6 +242,17 @@ const std::vector<ERModel::RelationshipID> ERModel::GetConnectedRelationships(co
     return connectedRelationships;
 }
 
+const std::vector<ERModel::RelationshipID> ERModel::GetConnectedRelationshipsInWhichEntityIsAChild(const EntityID id) const {
+    std::vector<RelationshipID> connectedRelationships;
+    if (entities.count(id) == 0) {
+        throw TError("Invalid entity ID!");
+    }
+    auto v = graph.GetEdgesFromCurrent(id);
+    for (const auto& i : v) {
+        connectedRelationships.push_back(i);
+    }
+    return connectedRelationships;
+}
 
 // ПРОВЕРКА:
 
