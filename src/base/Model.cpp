@@ -139,6 +139,10 @@ bool ERModel::RemoveRelationship(const std::string &lhsEntityName,
     }
 }
 
+void ERModel::RemoveAllRelationships() {
+    relationships.clear();
+}
+
 // ГЕТТЕРЫ:
 
 const Entity& ERModel::GetEntity(const std::string& name) {

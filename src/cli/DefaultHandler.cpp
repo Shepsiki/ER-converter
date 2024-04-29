@@ -78,8 +78,73 @@ void DefaultHandler::Execute(const Command& args, std::ostream& out) {
             }
         
         }
-    // ENTITY COMMANDS END //
     }
+    // ENTITY COMMANDS END //
+
+    // RELATIONSHIP COMMANDS BEGIN //
+
+    if (args[0] == "relationship") {
+
+        if (args[1] == "list") {
+            ModelRelationList();
+        }
+
+        if (args[1] == "add") {
+            ModelRelationAdd(args[3], args[4], args[2], args[5], args[6]); //тезисно
+
+        }
+
+        if (args[2] == "clear") {
+            ModelRelationClear();
+        }
+
+        if (args[2] == "delete") {
+            ModelRelationDelete(args[3], args[4], args[5]);
+        }
+    }
+
+    // RELATIONSHIP COMMANDS END //
+
+    // CONNNFIG COMMANDS BEGIN //
+
+    if (args[0] == "config") {
+
+        if (args[1] == "types") {
+            ModelConfigTypes();
+        }
+
+        if (args[1] == "constraints") {
+            ModelConfigConstraints();
+        }
+
+    }
+
+    // CONFIG COMMANDS END //
+
+    // HELP COMMANDS BEGIN //
+
+    if (args[0] == "help") {
+
+        if (args.size() != 1) {
+
+            if (args[1] == "model") {
+                ModelHelpModel();
+            }
+
+            if (args[1] == "entity") {
+                ModelHelpEntity();
+            }
+
+            if(args[1] == "relationship") {
+                ModelHelpRelationship();
+            }
+            
+        } else {
+            ModelHelp();
+        }
+    }
+
+    // HELP COMMANDS END //
 }
 
 int DefaultHandler::FromStringToDataType(const std::string& str) {
@@ -127,6 +192,16 @@ int DefaultHandler::FromStringToCovType(const std::string str) {
         return 5;
     if (str == "DEFAULT_C")
         return 6;
+    return 0;
+}
+
+int DefaultHandler::FromStringToRelationType(const std::string str) {
+    if (str == "ONE_TO_ONE_T")
+        return 1;
+    if (str == "ONE_TO_MANY_T")
+        return 2;
+    if (str == "MANY_TO_MANY_T")
+        return 3;
     return 0;
 }
 
@@ -241,13 +316,131 @@ void DefaultHandler::ModelEntityAttributeList(const std::string& name) {
 
 void DefaultHandler::ModelEntityAttributeClear(const std::string& name) {
     if (models.size() != 0) {
-        // Entity ent = current.second.GetEntity(name);
-        // Не хватает метода Clear или DeleteAllFields для класса Entity
-        // Есть только удаление по имени сущности DeleteField(); 
+        Entity ent = current.second.GetEntity(name);
+        ent.DeleteAllFields();
     } else {
         std::cout << "There are no models" << std::endl;
     }
 }
 
+void DefaultHandler::ModelRelationList() {
+    if (models.size() != 0) {
+        std::vector<Relationship> relations = current.second.GetRelationships();
+        for (int i = 0; i < relations.size(); i++) {
+            std::cout << relations[i].GetName();
+        }
+    } else {
+        std::cout << "There are no models" << std::endl;
+    }
+}
+
+void DefaultHandler::ModelRelationAdd(std::string strtype, //тезисно
+                             const std::string &lhsEntityName, 
+                             const std::string &rhsEntityName,
+                             const std::string &foreignKey,
+                             const std::string _name) {
+
+    // Entity entl = current.second.GetEntity(lhsEntityName);
+    // Entity entr = current.second.GetEntity(rhsEntityName);
+    TypeRelationship type = TypeRelationship(FromStringToRelationType(strtype));
+    if (models.size() != 0) 
+        current.second.AddRelationship(type,lhsEntityName, rhsEntityName, foreignKey, _name);
+    else 
+        std::cout << "There are no models" << std::endl;
+}
+
+void DefaultHandler::ModelRelationClear() {
+    if (models.size() != 0)
+        current.second.RemoveAllRelationships();
+    else
+        std::cout << "There are no models" << std::endl;
+}
+
+void DefaultHandler::ModelRelationDelete(const std::string &lhsEntityName, 
+                                        const std::string &rhsEntityName,
+                                        const std::string &foreignKey) {
+    if (models.size() != 0)
+        current.second.RemoveRelationship(lhsEntityName, rhsEntityName, foreignKey);
+    else
+        std::cout << "There are no models" << std::endl;
+    
+
+}
+
+void DefaultHandler::ModelConfigTypes() {
+    std::cout << "There are types: " << std::endl;
+    std::cout << "UNDEFINED" << std::endl;
+    std::cout << "SMALL_INT_T" << std::endl;
+    std::cout << "INT_T" << std::endl;
+    std::cout << "BIG_INT_T" << std::endl;
+    std::cout << "NUMERIC_DEC_T" << std::endl;
+    std::cout << "REAL_T" << std::endl;
+    std::cout << "DOUBLE_PRECIS_T" << std::endl;
+    std::cout << "FLOAT_T" << std::endl;
+    std::cout << "CHAR_T" << std::endl;
+    std::cout << "VARCHAR_T" << std::endl;
+    std::cout << "DATE_T" << std::endl;
+    std::cout << "TIME_T" << std::endl;
+    std::cout << "TIMESTAMP_WITH_TZ_T" << std::endl;
+    std::cout << "TIMESTAMP_WITHOUT_TZ_T" << std::endl;
+}
+
+void DefaultHandler::ModelConfigConstraints() {
+    std::cout << "There are constraints: " << std::endl;
+    std::cout << "UNDEFINED" << std::endl;
+    std::cout << "NOT_NULL_C" << std::endl;
+    std::cout << "NOT_NULL_C" << std::endl;
+    std::cout << "NULL_C" << std::endl;
+    std::cout << "UNIQUE_C" << std::endl;
+    std::cout << "PRIMARY_KEY_C" << std::endl;
+    std::cout << "FOREIGN_KEY_C" << std::endl;
+    std::cout << "DEFAULT_C" << std::endl;
+}
+
+void DefaultHandler::ModelHelp() {
+    std::cout << "You can use commands: \n" << std::endl;
+    std::cout << "model ..." << std::endl;
+    std::cout << "entity ..." << std::endl;
+    std::cout << "relationship ...\n" << std::endl;
+
+    std::cout << "Enter `help ...` and one of them to know more" << std::endl;
+
+}
+
+void DefaultHandler::ModelHelpModel() {
+    std::cout << "You can use commands: \n" << std::endl;
+    std::cout << "model new <name> - to make a new model with name <name>" << std::endl;
+    std::cout << "model delete <name> - to delete a model with name <name>" << std::endl;
+    std::cout << "model select <name> - to select a model with name <name>" << std::endl;
+    std::cout << "(default: if you didn't select a model, the last added is selected)" << std::endl;
+    std::cout << "model selected - what is the model selected" << std::endl; 
+    std::cout << "model list - just print names of all added models" << std::endl;
+    std::cout << "model clear - just delete all models" << std::endl;
+}
+
+void DefaultHandler::ModelHelpEntity() {
+    std::cout << "You can use commands: \n" << std::endl;
+    std::cout << "entity new <name> - to make a new entity with name <name>" << std::endl;
+    std::cout << "entity delete <name> - to delete an entity with name <name>" << std::endl;
+    std::cout << "entity attrinute add <entity_name> <attribute_name> <attribute_type> [constraints] - to add a new attribute" << std::endl;
+    std::cout << "entity attribute delete <entity_name> <attribute_name> - just delete attribute" << std::endl; 
+    std::cout << "entity attribute list <entity_name> - just print names of all attributes of this entity" << std::endl;
+    std::cout << "entity attribute clear - just delete all attributes of entity" << std::endl;
+}
+
+void DefaultHandler::ModelHelpRelationship() {
+    std::cout << "You can use commands: \n" << std::endl;
+    std::cout << "entity new <name> - to make a new entity with name <name>" << std::endl;
+    std::cout << "entity delete <name> - to delete an entity with name <name>" << std::endl;
+    std::cout << "entity attrinute add <entity1_name> <entity2_name> <attribute2_name> <type> - to add a new relationship" << std::endl;
+    std::cout << "relationship delete <entity1_name> <entity2_name> <attribute2_name> - just delete relationship" << std::endl; 
+    std::cout << "relationship list - just print names of all relationshups" << std::endl;
+    std::cout << "relationship clear - just delete all relationships" << std::endl;
+}
+
+
+
+
 
 } // namespace erconv
+ 

@@ -42,6 +42,7 @@ namespace erconv {
         bool RemoveRelationship(const std::string &lhsEntityName, 
                                 const std::string &rhsEntityName,
                                 const std::string &foreignKey);
+        void RemoveAllRelationships();
 
     // ГЕТТЕРЫ:
 

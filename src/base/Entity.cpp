@@ -59,6 +59,10 @@ bool erconv::Entity::DeleteField(const std::string & name)
     return true;
 }
 
+void erconv::Entity::DeleteAllFields() {
+    Fields.clear();
+}
+
 const std::vector<erconv::TEntityField> & erconv::Entity::GetAllFields() 
 {
     return Fields;

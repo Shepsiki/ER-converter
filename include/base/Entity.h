@@ -75,6 +75,7 @@ namespace erconv {
             const std::vector<ConstraintsEntity> & constr
         );
         bool DeleteField(const std::string & name);
+        void DeleteAllFields(); // added by Lenina-Paket
 
         const std::vector<TEntityField> & GetAllFields();
         const TEntityField & GetFieldByName(const std::string & name) const; // <-- Добавил const
