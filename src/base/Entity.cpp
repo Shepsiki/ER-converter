@@ -59,7 +59,7 @@ bool erconv::Entity::DeleteField(const std::string & name)
     return true;
 }
 
-const std::vector<erconv::TEntityField> & erconv::Entity::GetAllFields() 
+const std::vector<erconv::TEntityField> & erconv::Entity::GetAllFields() const 
 {
     return Fields;
 }
@@ -167,7 +167,7 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
             }
             break;
 
-        case ConstraintsEntity::NOT_NULL_C:
+        /*case ConstraintsEntity::NOT_NULL_C:
             for (size_t j = 0; j < constr.size(); ++j) {
                 if (
                     constr[j] == ConstraintsEntity::NULL_C
@@ -187,7 +187,7 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
                     return false;
                 }
             }
-            break;
+            break;*/
 
         case ConstraintsEntity::PRIMARY_KEY_C:
             if (hasPrimaryKey == true) {

@@ -55,6 +55,7 @@ namespace erconv {
         std::vector<EntityID> GetEntities() const;
         std::vector<RelationshipID> GetRelationships() const;
         const std::vector<RelationshipID> GetConnectedRelationships(const EntityID id) const;
+        const std::vector<RelationshipID> GetConnectedRelationshipsInWhichEntityIsAChild(const EntityID id) const; // <- Added new getter
 
         bool IsEmpty();
         bool HasEntityWithName(const std::string& name);

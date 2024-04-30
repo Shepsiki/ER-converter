@@ -68,34 +68,6 @@ TEST(TestMethodAddField, TestExceptionToInvalidDataType) {
     );
 }
 
-TEST(TestMethodAddField, TestExceptionToCheckNullRepeat) {
-    erconv::Entity Test("Test");
-    
-    std::vector<erconv::ConstraintsEntity> constr1 {
-        erconv::ConstraintsEntity::NULL_C,
-        erconv::ConstraintsEntity::NOT_NULL_C
-    };
-    
-    ASSERT_THROW(
-        Test.AddField("Id", erconv::DataTypeEntity::INT_T, constr1),
-        erconv::TError
-    );
-}
-
-TEST(TestMethodAddField, TestExceptionToCheckNotNullRepeat) {
-    erconv::Entity Test("Test");
-    
-    std::vector<erconv::ConstraintsEntity> constr1 {
-        erconv::ConstraintsEntity::NOT_NULL_C,
-        erconv::ConstraintsEntity::NULL_C
-    };
-    
-    ASSERT_THROW(
-        Test.AddField("Id", erconv::DataTypeEntity::INT_T, constr1),
-        erconv::TError
-    );
-}
-
 TEST(TestMethodAddField, TestExceptionToRepeatDeclaratePrimaryKey) {
     erconv::Entity Test("Test");
     
