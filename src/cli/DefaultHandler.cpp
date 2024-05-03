@@ -275,8 +275,9 @@ void DefaultHandler::ModelEntityDeleteName(const std::string& name) {
 void DefaultHandler::ModelEntityList() {
     if (models.size() != 0) {
         std::cout << "There are list of entities of model " << current.first << std::endl;
-        for (const Entity& ent : current.second.GetEntities()) {
-            std::cout << ent.GetName() << std::endl;
+        std::vector<ERModel::EntityID> ents = current.second.GetEntities();
+        for (const auto ent : ents) {
+            std::cout << current.second.GetEntity(ent).GetName() << std::endl;
         }
     } else {
         std::cout << "There are no models" << std::endl;
@@ -325,12 +326,9 @@ void DefaultHandler::ModelEntityAttributeClear(const std::string& name) {
 
 void DefaultHandler::ModelRelationList() {
     if (models.size() != 0) {
-        // const std::vector<Relationship> relations = current.second.GetRelationships();
-        // for (int i = 0; i < relations.size(); i++) {
-        //     std::cout << relations[i].GetName();
-        // }
-        for (const Relationship&  rel: current.second.GetRelationships()) {
-            std::cout << rel.GetName();
+        std::vector<ERModel::RelationshipID> rels = current.second.GetRelationships();
+        for (const auto rel : rels) {
+            std::cout << current.second.GetRelationship(rel).GetName();
         }
     } else {
         std::cout << "There are no models" << std::endl;

@@ -223,7 +223,7 @@ std::vector<ERModel::EntityID> ERModel::GetEntities() const {
 }
 
 std::vector<ERModel::RelationshipID> ERModel::GetRelationships() const {
-    std::vector<EntityID> result;
+    std::vector<RelationshipID> result;
     for (const auto& p : relationships) {
         result.push_back(p.first);
     }
