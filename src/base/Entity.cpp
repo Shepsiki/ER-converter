@@ -63,7 +63,7 @@ void erconv::Entity::DeleteAllFields() {
     Fields.clear();
 }
 
-const std::vector<erconv::TEntityField> & erconv::Entity::GetAllFields() 
+const std::vector<erconv::TEntityField> & erconv::Entity::GetAllFields() const
 {
     return Fields;
 }
@@ -82,8 +82,40 @@ const erconv::TEntityField & erconv::Entity::GetFieldByName(const std::string & 
     throw TError(ErrorsType::NOT_FOUND_ENTITY_FIELD_NAME_E);
 }
 
-const std::vector<erconv::TEntityField>::iterator erconv::Entity::findName(const std::string & nameF) 
-{
+bool erconv::Entity::SetForeignKeyForField(const std::string &fieldName) {
+    for (auto& f : Fields) {
+        if (f.Name == fieldName) {
+            try {
+                f.Constraints.push_back(ConstraintsEntity::FOREIGN_KEY_C);
+                checkIsValidDataTypeAndConstraints(f.DataType, f.Constraints);
+            } catch (...) {
+                return false;
+            }
+            return true;
+        }
+    } 
+    return false;
+}
+
+bool erconv::Entity::UnsetForeignKeyForField(const std::string &fieldName) {
+    size_t shift = 0;
+    for (auto& f : Fields) {
+        if (f.Name == fieldName) {
+            for (size_t i = 0; i < f.Constraints.size(); i++) {
+                if (f.Constraints[i] == ConstraintsEntity::FOREIGN_KEY_C) {
+                    shift++;
+                } else {
+                    f.Constraints[i - shift] = f.Constraints[i];
+                }
+            }
+            f.Constraints.resize(f.Constraints.size() - shift);
+            break;
+        }
+    }
+    return (shift > 0);
+}
+
+const std::vector<erconv::TEntityField>::iterator erconv::Entity::findName(const std::string & nameF) {
     for (int i = 0; i < Fields.size(); ++i) {
         if (Fields[i].Name == nameF) {
             return Fields.begin() + i;
@@ -139,7 +171,7 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
             }
             break;
 
-        case ConstraintsEntity::NOT_NULL_C:
+        /*case ConstraintsEntity::NOT_NULL_C:
             for (size_t j = 0; j < constr.size(); ++j) {
                 if (
                     constr[j] == ConstraintsEntity::NULL_C
@@ -159,7 +191,7 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
                     return false;
                 }
             }
-            break;
+            break;*/
 
         case ConstraintsEntity::PRIMARY_KEY_C:
             if (hasPrimaryKey == true) {

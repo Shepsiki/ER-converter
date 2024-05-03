@@ -21,6 +21,8 @@ namespace erconv {
     class Relationship {
     // МЕТОДЫ
     public:
+        Relationship() = default;
+
         Relationship(ERModel* _model,
                      TypeRelationship _type, 
                      const std::string  &_lhsEntityName, 

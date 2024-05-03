@@ -37,10 +37,11 @@ namespace erconv {
         constraints in the some fileds
         of the entity
     */
+
+   //Удалил из класса ниже ограничение NULL_C - такого просто нет
     enum class ConstraintsEntity {
         UNDEFINED = 0,
         NOT_NULL_C,
-        NULL_C,
         UNIQUE_C,
         PRIMARY_KEY_C,
         FOREIGN_KEY_C,
@@ -77,8 +78,11 @@ namespace erconv {
         bool DeleteField(const std::string & name);
         void DeleteAllFields(); // added by Lenina-Paket
 
-        const std::vector<TEntityField> & GetAllFields();
+        const std::vector<TEntityField> & GetAllFields() const; // <-- Добавил const
         const TEntityField & GetFieldByName(const std::string & name) const; // <-- Добавил const
+
+        bool SetForeignKeyForField(const std::string& fieldName);
+        bool UnsetForeignKeyForField(const std::string& fieldName);
 
         Entity() : EntityName("NO_NAME") {}
         std::string GetName() const;
