@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include "base/Graph.h"
+
 using namespace erconv;
 
 int main() {
