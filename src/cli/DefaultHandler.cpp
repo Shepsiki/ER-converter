@@ -216,10 +216,14 @@ void DefaultHandler::ModelNewName(const std::string& name) {
 }
 
 void DefaultHandler::ModelDeleteName(const std::string& name) {
-    models.erase(name);
-    if (current.first == name) {
-        current.first = models.begin()->first;
-        current.second = models.begin()->second;
+    if (models.find(name) == models.end()) {
+        std::cout << "Model with name " << name << " not in list" << std::endl;
+    } else {
+        if (current.first == name) {
+            current.first = models.begin()->first;
+            current.second = models.begin()->second;
+        }
+        models.erase(name);
     }
 }
 
