@@ -2,120 +2,203 @@
 
 namespace erconv {
 
-void DefaultHandler::Execute(const Command& args, std::ostream& out) {
-    // Здесь вся обработка запросов.
-    // Dummy code:
-    // for (const auto& arg : args) {
-    //     out << arg << " ";
-    // }
-    // out << std::endl;
-    
+void DefaultHandler::Execute(const Command& args, std::ostream& out) {  
 
     // MODEL COMMANDS BEGIN // 
+
     if (args[0] == "model") {
+        if (args.size() > 1) {
+            
+            if (args.size() == 3)
+                if (args[1] == "new") {
+                    ModelNewName(args[2]);
+                }
+            else ModelHelpModel();
 
-        if (args[1] == "new") {
-            ModelNewName(args[2]);
-        }
+            if (args[1] == "delete") {
+                ModelDeleteName(args[2]);
+            }
 
-        if (args[1] == "delete") {
-            ModelDeleteName(args[2]);
-        }
+            if (args[1] == "select") {
+                ModelSelectName(args[2]);
+            }
 
-        if (args[1] == "select") {
-            ModelSelectName(args[2]);
-        }
+            if (args[1] == "selected") {
+                ModelSelected();
+            }
 
-        if (args[1] == "selected") {
-            ModelSelected();
-        }
+            if (args[1] == "list") {
+                ModelList();
+            }
 
-        if (args[1] == "list") {
-            ModelList();
-        }
-
-        if (args[1] == "clear") {
-            ModelClear();
+            if (args[1] == "clear") {
+                ModelClear();
+            }
+        } else {
+            ModelHelpModel();
+            // ErrorMessage(args[0]);
         }
     }
     // MODEL COMMANDS END //
 
     // ENTITY COMMANDS BEGIN //
-    if (args[0] == "entity") {
-        if (args[1] == "new") {
-            ModelEntityNewName(args[2]);
-        }
-
-        if (args[1] == "delete") {
-            ModelEntityDeleteName(args[2]);
-        }
-
-        if (args[1] == "list") {
-            ModelEntityList();
-        }
-
-        if (args[1] == "attribute") {
-            if (args[2] == "add") {
-                DataTypeEntity enumType = DataTypeEntity(FromStringToDataType(args[5]));
-                std::vector<ConstraintsEntity> fieldConstr;
-                for (int i = 6; i < args.size(); i++) {
-                    ConstraintsEntity fieldType = ConstraintsEntity(FromStringToCovType(args[i]));
-                    fieldConstr.push_back(fieldType);
-                }
-                ModelEntityAttributeAdd(args[3], args[4], enumType, fieldConstr);
-            }
-
-            if (args[2] == "delete") {
-                ModelEntityAttributeDelete(args[3], args[4]);
-            }
-
-            if (args[2] == "list") {
-               ModelEntityAttributeList(args[3]);
-            }
-
-            if (args[2] == "clear") {
-                void ModelEntityAttributeClear();
-            }
+    else if (args[0] == "entity") {
         
+        if (args.size() > 1) {
+
+            if (args[1] == "new") {
+                ModelEntityNewName(args[2]);
+            }
+
+            else if (args[1] == "delete") {
+                ModelEntityDeleteName(args[2]);
+            }
+
+            else if (args[1] == "list") {
+                ModelEntityList();
+            }
+
+            else if (args[1] == "attribute") {
+
+                if (args.size() > 2) {
+
+                    if (args.size() >= 6) {
+
+                        if (args[2] == "add") {
+                            DataTypeEntity enumType = DataTypeEntity(FromStringToDataType(args[5]));
+                            
+                            std::vector<ConstraintsEntity> fieldConstr;
+                            ConstraintsEntity fieldType = ConstraintsEntity(0);
+                            for (int i = 6; i < args.size(); i++) {
+                                fieldType = ConstraintsEntity(FromStringToCovType(args[i]));
+                                // std::cout << args[i] << int(fieldType) << std::endl;
+                                fieldConstr.push_back(fieldType);
+                            }
+                            if (fieldConstr.size() == 0) {
+                                fieldConstr.push_back(fieldType);
+                            }
+                            ModelEntityAttributeAdd(args[3], args[4], enumType, fieldConstr);
+                        }
+
+                    } else if (args.size() == 5) {
+
+                        if (args[2] == "delete") {
+                            ModelEntityAttributeDelete(args[3], args[4]);
+                        } else {
+                            ModelHelpEntity();
+                        }
+
+                    } else if (args.size() == 4) {
+
+                        if (args[2] == "list") {
+                            ModelEntityAttributeList(args[3]);
+                        } else {
+                            ModelHelpEntity();
+                        }
+
+                    } else {
+
+                        if (args[2] == "clear") {
+                            ModelEntityAttributeClear(args[3]);
+                        } else {
+                            ModelHelpEntity();
+                        }
+                    } 
+
+                } else {
+                    ModelHelpEntity();
+                }
+            }
+
+            else {
+                ModelHelpEntity();
+            }
+
+        } else {
+            ModelHelpEntity();
         }
     }
     // ENTITY COMMANDS END //
 
     // RELATIONSHIP COMMANDS BEGIN //
 
-    if (args[0] == "relationship") {
+    else if (args[0] == "relationship") {
 
-        if (args[1] == "list") {
-            ModelRelationList();
-        }
+        if (args.size() > 1) {
 
-        if (args[1] == "add") {
-            ModelRelationAdd(args[3], args[4], args[2], args[5], args[6]); //тезисно
+            if (args.size() < 5) {
 
-        }
+                if (args[1] == "list") {
 
-        if (args[2] == "clear") {
-            ModelRelationClear();
-        }
+                    ModelRelationList();
 
-        if (args[2] == "delete") {
-            ModelRelationDelete(args[3], args[4], args[5]);
+                } else if (args[1] == "clear") {
+
+                    ModelRelationClear();
+
+                } else {
+
+                    ModelHelpRelationship();
+
+                }
+            } else if (args.size() == 5) {
+
+                if (args[1] == "delete") {
+
+                    ModelRelationDelete(args[2], args[3], args[4]);
+
+                } else {
+
+                    ModelHelpRelationship();
+                }
+            } else {
+
+                if (args.size() == 6) {
+
+                    if (args[1] == "add") {
+
+                        ModelRelationAdd(args[5], args[2], args[3], args[4]); 
+
+                    } else {
+
+                        ModelHelpRelationship();
+
+                    }
+                } else {
+
+                    ModelHelpRelationship();
+
+                }
+            } 
+        } else {
+            ModelHelpRelationship();
         }
     }
 
     // RELATIONSHIP COMMANDS END //
 
+    // GENERATE COMMANDS BEGIN //
+
+    else if (args[0] == "generate") {
+        ModelGenerator();
+    }
+
+    // GENERATE CPMMANDS END //
+
     // CONNNFIG COMMANDS BEGIN //
 
-    if (args[0] == "config") {
+    else if (args[0] == "config") {
 
-        if (args[1] == "types") {
-            ModelConfigTypes();
-        }
+        if (args.size() > 1) {
+            if (args[1] == "types") {
+                ModelConfigTypes();
+            }
 
-        if (args[1] == "constraints") {
-            ModelConfigConstraints();
-        }
+            if (args[1] == "constraints") {
+                ModelConfigConstraints();
+            }
+
+        } else ModelHelpConfig();
 
     }
 
@@ -123,9 +206,9 @@ void DefaultHandler::Execute(const Command& args, std::ostream& out) {
 
     // HELP COMMANDS BEGIN //
 
-    if (args[0] == "help") {
+    else if (args[0] == "help") {
 
-        if (args.size() != 1) {
+        if (args.size() > 1) {
 
             if (args[1] == "model") {
                 ModelHelpModel();
@@ -135,8 +218,12 @@ void DefaultHandler::Execute(const Command& args, std::ostream& out) {
                 ModelHelpEntity();
             }
 
-            if(args[1] == "relationship") {
+            if (args[1] == "relationship") {
                 ModelHelpRelationship();
+            }
+
+            if (args[1] == "config") {
+                ModelHelpConfig();
             }
             
         } else {
@@ -145,6 +232,9 @@ void DefaultHandler::Execute(const Command& args, std::ostream& out) {
     }
 
     // HELP COMMANDS END //
+    else {
+        ModelHelp();
+    }
 }
 
 int DefaultHandler::FromStringToDataType(const std::string& str) {
@@ -182,16 +272,14 @@ int DefaultHandler::FromStringToDataType(const std::string& str) {
 int DefaultHandler::FromStringToCovType(const std::string str) {
     if (str == "NOT_NULL_C")
         return 1;
-    if (str == "NULL_C")
-        return 2;
     if (str == "UNIQUE_C")
-        return 3;
+        return 2;
     if (str == "PRIMARY_KEY_C")
-        return 4;
+        return 3;
     if (str == "FOREIGN_KEY_C")
-        return 5;
+        return 4;
     if (str == "DEFAULT_C")
-        return 6;
+        return 5;
     return 0;
 }
 
@@ -309,10 +397,13 @@ void DefaultHandler::ModelEntityAttributeList(const std::string& name) {
     if (models.size() != 0) {
         Entity ent = current.second.GetEntity(name);
         const std::vector<TEntityField> vec = ent.GetAllFields();
-        if (vec.size() != 0)
+        if (vec.size() != 0) {
             std::cout << "Attributes of entity " << name << ":\n";
-        for (int i = 0; i < vec.size(); i++) {
-            std::cout << vec[i].Name << std::endl;
+            for (int i = 0; i < vec.size(); i++) {
+                std::cout << vec[i].Name << std::endl;
+            }
+        } else {
+            std::cout << "This entity has not any attributes" << std::endl;
         }
     }
     else
@@ -331,25 +422,26 @@ void DefaultHandler::ModelEntityAttributeClear(const std::string& name) {
 void DefaultHandler::ModelRelationList() {
     if (models.size() != 0) {
         std::vector<ERModel::RelationshipID> rels = current.second.GetRelationships();
-        for (const auto rel : rels) {
-            std::cout << current.second.GetRelationship(rel).GetName();
-        }
+        if (rels.size() != 0)
+            for (const auto rel : rels) {
+                std::cout << current.second.GetRelationship(rel).GetName();
+            }
+        else 
+            std::cout << "There are no relationships yet" << std::endl;
     } else {
         std::cout << "There are no models" << std::endl;
     }
 }
 
-void DefaultHandler::ModelRelationAdd(std::string strtype, //тезисно
+void DefaultHandler::ModelRelationAdd(std::string strtype, 
                              const std::string &lhsEntityName, 
                              const std::string &rhsEntityName,
-                             const std::string &foreignKey,
-                             const std::string _name) {
+                             const std::string &foreignKey) {
 
-    // Entity entl = current.second.GetEntity(lhsEntityName);
-    // Entity entr = current.second.GetEntity(rhsEntityName);
     TypeRelationship type = TypeRelationship(FromStringToRelationType(strtype));
+    // std::cout << strtype << ' ' << lhsEntityName << ' ' << rhsEntityName << ' ' << foreignKey << std::endl;
     if (models.size() != 0) 
-        current.second.AddRelationship(type,lhsEntityName, rhsEntityName, foreignKey, _name);
+        current.second.AddRelationship(type, lhsEntityName, rhsEntityName, foreignKey);
     else 
         std::cout << "There are no models" << std::endl;
 }
@@ -369,6 +461,31 @@ void DefaultHandler::ModelRelationDelete(const std::string &lhsEntityName,
     else
         std::cout << "There are no models" << std::endl;
     
+
+}
+
+void DefaultHandler::ModelGenerator() {
+    // if (models.size() != 0) {
+        try 
+        {
+            std::vector<std::string> finalScript = ScriptGenerator::Generate(current.second);
+        }
+        catch (const TError& ex) 
+        {
+            std::cout << ex.msg << std::endl; 
+        }
+
+    //     if (finalScript.size() > 0) {
+    //         for (int i = 0; i < finalScript.size(); ++i) {
+    //             std::cout << finalScript[i];
+    //         }
+    //     } else {
+    //         std::cout << "There is no scripts at selected model yet" << std::endl;
+    //     }
+
+    // } else {
+    //     std::cout << "There are no models" << std::endl;
+    // }
 
 }
 
@@ -406,8 +523,8 @@ void DefaultHandler::ModelHelp() {
     std::cout << "You can use commands: \n" << std::endl;
     std::cout << "model ..." << std::endl;
     std::cout << "entity ..." << std::endl;
-    std::cout << "relationship ...\n" << std::endl;
-
+    std::cout << "relationship ..." << std::endl;
+    std::cout << "config ... \n" << std::endl;
     std::cout << "Enter `help ...` and one of them to know more" << std::endl;
 
 }
@@ -434,13 +551,15 @@ void DefaultHandler::ModelHelpEntity() {
 }
 
 void DefaultHandler::ModelHelpRelationship() {
-    std::cout << "You can use commands: \n" << std::endl;
-    std::cout << "entity new <name> - to make a new entity with name <name>" << std::endl;
-    std::cout << "entity delete <name> - to delete an entity with name <name>" << std::endl;
-    std::cout << "entity attrinute add <entity1_name> <entity2_name> <attribute2_name> <type> - to add a new relationship" << std::endl;
+    std::cout << "relationship add <entity1_name> <entity2_name> <attrubute_name_ent2> <rel_type> - make rel from PRIMARY KEY attribure at entity 1" << std::endl; 
     std::cout << "relationship delete <entity1_name> <entity2_name> <attribute2_name> - just delete relationship" << std::endl; 
     std::cout << "relationship list - just print names of all relationshups" << std::endl;
     std::cout << "relationship clear - just delete all relationships" << std::endl;
+}
+
+void DefaultHandler::ModelHelpConfig() {
+    std::cout << "config types - to print availible types" << std::endl;
+    std::cout << "config constraints - to print availible constraints" << std::endl;
 }
 
 

@@ -4,6 +4,7 @@
 #include "base/Model.h"
 #include "base/Entity.h"
 #include "base/Relationship.h"
+#include "base/ScriptGenerator.h"
 #include <unordered_map>
 
 namespace erconv {
@@ -21,7 +22,6 @@ private:
     int FromStringToDataType(const std::string& str);
     int FromStringToCovType(const std::string str);
     int FromStringToRelationType(const std::string str);
-
 
     void ModelNewName(const std::string& name);
     void ModelDeleteName(const std::string& name);
@@ -45,12 +45,13 @@ private:
     void ModelRelationAdd(std::string strtype, 
                             const std::string &lhsEntityName, 
                              const std::string &rhsEntityName,
-                             const std::string &foreignKey,
-                             const std::string _name="unnamed_relation");
+                             const std::string &foreignKey);
     void ModelRelationClear();
     void ModelRelationDelete(const std::string &lhsEntityName, 
                             const std::string &rhsEntityName,
                             const std::string &foreignKey);
+    
+    void ModelGenerator();
 
     void ModelConfigTypes();
     void ModelConfigConstraints();
@@ -59,6 +60,7 @@ private:
     void ModelHelpModel();
     void ModelHelpEntity();
     void ModelHelpRelationship();
+    void ModelHelpConfig();
 
 
 };
