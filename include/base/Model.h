@@ -25,6 +25,8 @@ namespace erconv {
         ERModel() = default;
         ~ERModel() = default;
 
+        ERModel& operator=(const ERModel& model);
+
         EntityID AddEntity(const std::string name);
         EntityID AddEntity(Entity& entity);
         bool AddEntityField(const std::string   entityName, 

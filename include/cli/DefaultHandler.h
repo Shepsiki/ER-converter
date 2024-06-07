@@ -17,6 +17,7 @@ public:
 private:
     std::unordered_map<std::string, ERModel> models;
     std::pair<std::string, ERModel> current;
+    //std::unordered_map<std::string, ERModel>::iterator current;
 
 private:
     int FromStringToDataType(const std::string& str);

@@ -9,34 +9,38 @@ void DefaultHandler::Execute(const Command& args, std::ostream& out) {
     if (args[0] == "model") {
         if (args.size() > 1) {
             
-            if (args.size() == 3)
+            if (args.size() == 3) {
                 if (args[1] == "new") {
                     ModelNewName(args[2]);
                 }
-            else ModelHelpModel();
 
-            if (args[1] == "delete") {
-                ModelDeleteName(args[2]);
-            }
+                if (args[1] == "delete") {
+                    ModelDeleteName(args[2]);
+                }
 
-            if (args[1] == "select") {
-                ModelSelectName(args[2]);
-            }
+                if (args[1] == "select") {
+                    ModelSelectName(args[2]);
+                }
+    
+            } else if (args.size() == 2) {
+                if (args[1] == "selected") {
+                    ModelSelected();
+                }
 
-            if (args[1] == "selected") {
-                ModelSelected();
-            }
+                if (args[1] == "list") {
+                    ModelList();
+                }
 
-            if (args[1] == "list") {
-                ModelList();
-            }
+                if (args[1] == "clear") {
+                    ModelClear();
+                }
 
-            if (args[1] == "clear") {
-                ModelClear();
+            } else {
+                ModelHelpModel();
             }
+            
         } else {
             ModelHelpModel();
-            // ErrorMessage(args[0]);
         }
     }
     // MODEL COMMANDS END //
@@ -295,6 +299,9 @@ void DefaultHandler::ModelNewName(const std::string& name) {
     } else {
         ERModel model;
         models.insert({name, model});
+        if (!current.second.IsEmpty()) {
+            models[current.first] = current.second;
+        }
         current = {name, model};
     }
 }
@@ -315,8 +322,15 @@ void DefaultHandler::ModelSelectName(const std::string& name) {
     if (models.find(name) == models.end()) {
         std::cout << "Model with name " << name << " not in list" << std::endl;
     } else {
+        std::cout << models[current.first].IsEmpty() << std::endl;
+        models[current.first] = current.second;
+        std::cout << models[current.first].IsEmpty() << std::endl;
         current.first = name;
+        // std::cout << current.second.IsEmpty() << std::endl;
         current.second = models[name];
+        // std::cout << current.second.IsEmpty() << std::endl;
+
+        // current = *models.find(name);
     }
 }
 

@@ -2,6 +2,20 @@
 
 using namespace erconv;
 
+//COPY CONSTRUCTOR
+
+ERModel& ERModel::operator=(const ERModel& model) {
+    this->graph = model.graph;
+    this->entities = model.entities;
+    this->entitiesNamesToIDsMapping = model.entitiesNamesToIDsMapping;
+    this->idmEntities = model.idmEntities;
+    this->idmRelationships = model.idmRelationships;
+    this->relationships = model.relationships;
+    this->relationshipsToIDsMapping = model.relationshipsToIDsMapping;
+    
+    return *this;
+}
+
 // СОЗДАНИЕ/УДАЛЕНИЕ:
 
 ERModel::EntityID ERModel::AddEntity(const std::string name) {
