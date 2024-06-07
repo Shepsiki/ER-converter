@@ -12,8 +12,18 @@ template <class V = size_t, class E = size_t>
 class DirectedGraph {
 public:
     using Edge = std::pair<V, V>;
+    using EdgeDirection = std::pair<V, E>;
 
     DirectedGraph() = default;
+
+    DirectedGraph& operator=(const DirectedGraph& gr) {
+        this->edges = gr.GetEdges();
+        this->vertices = gr.GetVertices();
+        this->edgeList = gr.GetEdgeList();
+        this->edgeListReversed = gr.GetEdgeListReversed();
+
+        return *this;
+    }
 
     bool AddVertex(const V& vertex) {
         if (vertices.count(vertex) != 0) {
@@ -83,6 +93,14 @@ public:
 
     const std::map<E, Edge>& GetEdges() const {
         return edges;
+    }
+
+    const std::map<V, std::set<EdgeDirection>>& GetEdgeList() const {
+        return edgeList;
+    }
+
+    const std::map<V, std::set<EdgeDirection>>& GetEdgeListReversed() const {
+        return edgeListReversed;
     }
 
     Edge GetEdge(const E& edge) const {
@@ -160,7 +178,6 @@ public:
     }
 
 private:
-    using EdgeDirection = std::pair<V, E>;
 
     std::set<V> vertices;
     std::map<E, Edge> edges;

@@ -25,6 +25,8 @@ namespace erconv {
         ERModel() = default;
         ~ERModel() = default;
 
+        ERModel& operator=(const ERModel& model);
+
         EntityID AddEntity(const std::string name);
         EntityID AddEntity(Entity& entity);
         bool AddEntityField(const std::string   entityName, 
@@ -44,6 +46,7 @@ namespace erconv {
         bool RemoveRelationship(const std::string &lhsEntityName, 
                                 const std::string &rhsEntityName,
                                 const std::string &foreignKey);
+        void RemoveAllRelationships();
 
         EntityID GetEntityIDByName(const std::string& name);
         const Entity& GetEntity(const std::string& name);

@@ -2,6 +2,20 @@
 
 using namespace erconv;
 
+//COPY CONSTRUCTOR
+
+ERModel& ERModel::operator=(const ERModel& model) {
+    this->graph = model.graph;
+    this->entities = model.entities;
+    this->entitiesNamesToIDsMapping = model.entitiesNamesToIDsMapping;
+    this->idmEntities = model.idmEntities;
+    this->idmRelationships = model.idmRelationships;
+    this->relationships = model.relationships;
+    this->relationshipsToIDsMapping = model.relationshipsToIDsMapping;
+    
+    return *this;
+}
+
 // СОЗДАНИЕ/УДАЛЕНИЕ:
 
 ERModel::EntityID ERModel::AddEntity(const std::string name) {
@@ -34,11 +48,7 @@ bool ERModel::AddEntityField(const std::string entityName,
         throw TError(ErrorsType::NOT_FOUND_ENTITY_FIELD_NAME_E);
     }
     Entity& ent = entities[entitiesNamesToIDsMapping[entityName]];
-    for (const auto& c : fieldConstr) {
-        if (c == ConstraintsEntity::FOREIGN_KEY_C) {
-            throw TError("ERModel: Trying to add entity with foreign key.");
-        }
-    }
+    
     return ent.AddField(fieldName, fieldType, fieldConstr);
 }
 
@@ -170,6 +180,10 @@ bool ERModel::RemoveRelationship(const std::string &lhsEntityName,
     return true;
 }
 
+void ERModel::RemoveAllRelationships() {
+    relationships.clear();
+}
+
 // ГЕТТЕРЫ:
 
 ERModel::EntityID ERModel::GetEntityIDByName(const std::string& name) {
@@ -219,7 +233,7 @@ std::vector<ERModel::EntityID> ERModel::GetEntities() const {
 }
 
 std::vector<ERModel::RelationshipID> ERModel::GetRelationships() const {
-    std::vector<EntityID> result;
+    std::vector<RelationshipID> result;
     for (const auto& p : relationships) {
         result.push_back(p.first);
     }

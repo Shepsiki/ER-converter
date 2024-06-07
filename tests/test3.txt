@@ -1,0 +1,8 @@
+model new uwu
+entity new users
+entity attribute add users user_id VARCHAR_T
+entity list
+entity attribute list
+entity attribute list users      
+entity attribute delete users user_id
+entity attribute list users
