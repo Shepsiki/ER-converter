@@ -1,0 +1,17 @@
+model new uwu1
+entity new a
+entity new b
+model new uwu2
+entity new c 
+entity new d
+model select uwu1
+entity attribute add a a_id INT_T PRIMARY_KEY_C
+entity attribute add b b_name VARCHAR_T
+entity attribute list a
+model select uwu2
+entity attribute add c c_id INT_T PRIMARY_KEY_C
+entity attribute add c c_name VARCHAR_T
+entity attribute list c
+generate
+model select uwu1
+generate

@@ -1,0 +1,19 @@
+model new uwu
+entity new orders
+entity new users
+model new uwu2
+entity new orders
+entity new users
+model select uwu
+entity attribute add users user_id INT_T PRIMARY_KEY_C
+entity attribute add users username VARCHAR_T
+entity attribute add orders order_name VARCHAR_T
+entity attribute add orders order_id INT_T FOREIGN_KEY_C
+relationship add users orders order_id ONE_TO_MANY_T
+relationship list
+generate
+model select uwu2
+entity list
+entity attribute add users user_id INT_T PRIMARY_KEY_C
+entity attribute add users username VARCHAR_T
+generate
