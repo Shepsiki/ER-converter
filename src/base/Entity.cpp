@@ -170,29 +170,6 @@ bool erconv::Entity::checkIsValidDataTypeAndConstraints(
                 return false;
             }
             break;
-
-        /*case ConstraintsEntity::NOT_NULL_C:
-            for (size_t j = 0; j < constr.size(); ++j) {
-                if (
-                    constr[j] == ConstraintsEntity::NULL_C
-                ) {
-                    throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
-                    return false;
-                }
-            }
-            break;
-
-        case ConstraintsEntity::NULL_C:
-            for (size_t j = 0; j < constr.size(); ++j) {
-                if (
-                    constr[j] == ConstraintsEntity::PRIMARY_KEY_C
-                ) {
-                    throw TError(ErrorsType::COLLISION_WITH_CONSTRAINTS_E);
-                    return false;
-                }
-            }
-            break;*/
-
         case ConstraintsEntity::PRIMARY_KEY_C:
             if (hasPrimaryKey == true) {
                 throw TError(ErrorsType::REDEFINITION_PRIMARY_KEY_E);

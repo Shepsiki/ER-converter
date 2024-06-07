@@ -33,6 +33,7 @@ std::string ScriptGenerator::getEntityFieldDataType(const DataTypeEntity& dataTy
         case DataTypeEntity::TIMESTAMP_WITHOUT_TZ_T:
             return "TIMESTAMP WITHOUT TIME ZONE";
         default:
+            std::cout << int(dataType) << std::endl;
             break;
     }
 

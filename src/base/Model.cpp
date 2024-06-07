@@ -34,11 +34,7 @@ bool ERModel::AddEntityField(const std::string entityName,
         throw TError(ErrorsType::NOT_FOUND_ENTITY_FIELD_NAME_E);
     }
     Entity& ent = entities[entitiesNamesToIDsMapping[entityName]];
-    for (const auto& c : fieldConstr) {
-        // if (c == ConstraintsEntity::FOREIGN_KEY_C) {
-        //     throw TError("ERModel: Trying to add entity with foreign key.");
-        // } WHY IS THIS HERE????????
-    }
+    
     return ent.AddField(fieldName, fieldType, fieldConstr);
 }
 

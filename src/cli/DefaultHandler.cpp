@@ -68,13 +68,9 @@ void DefaultHandler::Execute(const Command& args, std::ostream& out) {
                             DataTypeEntity enumType = DataTypeEntity(FromStringToDataType(args[5]));
                             
                             std::vector<ConstraintsEntity> fieldConstr;
-                            ConstraintsEntity fieldType = ConstraintsEntity(0);
+                            ConstraintsEntity fieldType;
                             for (int i = 6; i < args.size(); i++) {
                                 fieldType = ConstraintsEntity(FromStringToCovType(args[i]));
-                                // std::cout << args[i] << int(fieldType) << std::endl;
-                                fieldConstr.push_back(fieldType);
-                            }
-                            if (fieldConstr.size() == 0) {
                                 fieldConstr.push_back(fieldType);
                             }
                             ModelEntityAttributeAdd(args[3], args[4], enumType, fieldConstr);
@@ -380,10 +376,14 @@ void DefaultHandler::ModelEntityAttributeAdd(const std::string&   entityName,
                                             const std::string&   fieldName, 
                                             const DataTypeEntity &fieldType, 
                                             const std::vector<ConstraintsEntity> &fieldConstr) {
+    try {
     if (models.size() != 0)
         current.second.AddEntityField(entityName, fieldName, fieldType, fieldConstr);
     else
         std::cout << "There are no models" << std::endl;
+    } catch (const TError& ex) {
+        std::cout << ex.msg << std::endl;
+    }
 }
 
 void DefaultHandler::ModelEntityAttributeDelete(const std::string& name, const std::string& field) {
@@ -465,27 +465,20 @@ void DefaultHandler::ModelRelationDelete(const std::string &lhsEntityName,
 }
 
 void DefaultHandler::ModelGenerator() {
-    // if (models.size() != 0) {
-        try 
-        {
-            std::vector<std::string> finalScript = ScriptGenerator::Generate(current.second);
-        }
-        catch (const TError& ex) 
-        {
-            std::cout << ex.msg << std::endl; 
+    if (models.size() != 0) {
+        std::vector<std::string> finalScript = ScriptGenerator::Generate(current.second);
+
+        if (finalScript.size() > 0) {
+            for (int i = 0; i < finalScript.size(); ++i) {
+                std::cout << finalScript[i];
+            }
+        } else {
+            std::cout << "There is no scripts at selected model yet" << std::endl;
         }
 
-    //     if (finalScript.size() > 0) {
-    //         for (int i = 0; i < finalScript.size(); ++i) {
-    //             std::cout << finalScript[i];
-    //         }
-    //     } else {
-    //         std::cout << "There is no scripts at selected model yet" << std::endl;
-    //     }
-
-    // } else {
-    //     std::cout << "There are no models" << std::endl;
-    // }
+    } else {
+        std::cout << "There are no models" << std::endl;
+    }
 
 }
 
