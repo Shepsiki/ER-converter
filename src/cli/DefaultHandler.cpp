@@ -322,9 +322,9 @@ void DefaultHandler::ModelSelectName(const std::string& name) {
     if (models.find(name) == models.end()) {
         std::cout << "Model with name " << name << " not in list" << std::endl;
     } else {
-        std::cout << models[current.first].IsEmpty() << std::endl;
+        // std::cout << models[current.first].IsEmpty() << std::endl;
         models[current.first] = current.second;
-        std::cout << models[current.first].IsEmpty() << std::endl;
+        // std::cout << models[current.first].IsEmpty() << std::endl;
         current.first = name;
         // std::cout << current.second.IsEmpty() << std::endl;
         current.second = models[name];
